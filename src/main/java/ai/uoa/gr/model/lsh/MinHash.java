@@ -1,6 +1,7 @@
-package ai.uoa.gr.model;
+package ai.uoa.gr.model.lsh;
 
 import info.debatty.java.lsh.LSHMinHash;
+import info.debatty.java.lsh.LSHSuperBit;
 import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 
@@ -10,29 +11,15 @@ import java.util.List;
 import java.util.Set;
 
 
-public class MinHashLSH {
-    long timeSeed = System.currentTimeMillis();
+public class MinHash extends LocalitySensitiveHashing {
 
-    // rows per band
-    int r = 5;
-
-    // size of vector
-    int vectorSize = 2048;
-
-    // number of bands
-    int bands = (int) Math.ceil((float) vectorSize /(float) r);
-
-
-    int buckets = 50;
     LSHMinHash lsh;
-    ArrayList<Integer>[] entitiesInBuckets;
-
-    public MinHashLSH(){
+    public MinHash(){
         this.lsh = new LSHMinHash(this.bands, this.buckets, vectorSize, timeSeed);
         entitiesInBuckets = (ArrayList<Integer>[]) new ArrayList[this.buckets];
     }
 
-    public MinHashLSH(int vectorSize, int r, int buckets) {
+    public MinHash(int vectorSize, int r, int buckets) {
         this.vectorSize = vectorSize;
         this.bands = (int) Math.ceil((float) vectorSize /(float) r);
         this.buckets = buckets;

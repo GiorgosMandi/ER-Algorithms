@@ -5,7 +5,6 @@ public class Performance {
     float bestPrecision = 0;
     float bestF1 = 0;
 
-
     int bestR = 0;
     int bestBuckets = 0;
 
@@ -27,13 +26,17 @@ public class Performance {
     }
 
     public void print(){
-        System.out.println("Recall:\t"+bestRecall);
-        System.out.println("Precision:\t"+bestPrecision);
-        System.out.println("F1-score:\t"+bestF1);
+        System.out.println("\n======= BEST PERFORMANCE =======");
+        print(bestRecall, bestPrecision, bestF1, bestR, bestBuckets);
+    }
 
-        System.out.println("Best Band Size (r):\t"+bestR);
-        System.out.println("Best #Buckets:\t"+ bestBuckets);
+    public void print(float recall, float precision, float f1, int r, int buckets){
+        System.out.println("Recall:\t"+recall);
+        System.out.println("Precision:\t"+precision);
+        System.out.println("F1-score:\t"+f1);
 
+        System.out.println("Best Band Size (r):\t"+r);
+        System.out.println("Best #Buckets:\t"+ buckets);
         System.out.println();
     }
 }

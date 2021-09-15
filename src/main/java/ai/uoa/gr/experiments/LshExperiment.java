@@ -1,7 +1,9 @@
 package ai.uoa.gr.experiments;
 
-import ai.uoa.gr.model.MinHashLSH;
+import ai.uoa.gr.model.lsh.LocalitySensitiveHashing;
+import ai.uoa.gr.model.lsh.MinHash;
 import ai.uoa.gr.model.Performance;
+import ai.uoa.gr.model.lsh.SuperBit;
 import ai.uoa.gr.utils.Reader;
 import org.apache.commons.cli.*;
 import org.scify.jedai.datamodel.EntityProfile;
@@ -11,15 +13,15 @@ import java.util.List;
 import java.util.Set;
 
 
-public class MinHashExperiment {
+public class LshExperiment {
 
-    static int MIN_R = 1;
+    static int MIN_R = 2;
     static int MAX_R = 5;
-    static int STEP_R = 5;
+    static int STEP_R = 1;
 
     static int MIN_BUCKETS = 10;
     static int MAX_BUCKETS = 200;
-    static int STEP_BUCKETS = 100;
+    static int STEP_BUCKETS = 25;
 
 
     public static void main(String[] args) {
@@ -36,6 +38,8 @@ public class MinHashExperiment {
             options.addOption("minBuckets", true, "minimum value of Buckets");
             options.addOption("maxBuckets", true, "maximum value of Buckets");
             options.addOption("stepBuckets", true, "step value of Buckets");
+
+            options.addOption("superBit", false, "if specified use SuperBit, otherwise use MinHash");
 
             CommandLineParser parser = new DefaultParser();
 
@@ -57,13 +61,26 @@ public class MinHashExperiment {
             Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
             System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
 
+            boolean useSuperBit = cmd.hasOption("superBit");
+            if (useSuperBit)
+                System.out.println("Using LSH SuperBit");
+            else
+                System.out.println("Using LSH MinHash");
+
+            System.out.println("Grid Search Starts\n\n");
 
             int iteration = 1;
             Performance perf = new Performance();
             for (int r=MIN_R; r<=MAX_R; r+=STEP_R){
                 for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
                     System.out.format("Iteration: %d r:%d buckets:%d\n", iteration, r, buckets);
-                    MinHashLSH lsh = new MinHashLSH(2048, r, buckets);
+                    LocalitySensitiveHashing lsh;
+
+                    if (useSuperBit)
+                        lsh = new SuperBit(128, r, buckets);
+                    else
+                        lsh = new MinHash(2048, r, buckets);
+
                     lsh.index(sourceEntities);
 
                     long tp = 0;
@@ -81,6 +98,7 @@ public class MinHashExperiment {
                     float precision =  (float) tp / (float) total;
                     float f1 = 2*((precision*recall)/(precision+recall));
                     perf.conditionalUpdate(recall, precision, f1, r, buckets);
+                    perf.print(recall, precision, f1, r, buckets);
                 }
             }
             perf.print();
