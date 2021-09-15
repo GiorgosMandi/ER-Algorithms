@@ -42,24 +42,19 @@ public class MinHashExperiment {
             CommandLine cmd = parser.parse(options, args);
             String sourcePath = cmd.getOptionValue("s");
             System.out.println("Source Path: " + sourcePath);
-            EntitySerializationReader sourceReader = new EntitySerializationReader(sourcePath);
-            List<EntityProfile> sourceEntities = sourceReader.getEntityProfiles();
+            List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
             System.out.println("Source Entities: " + sourceEntities.size());
             System.out.println();
 
-
             String targetPath = cmd.getOptionValue("t");
             System.out.println("Target Path: " + targetPath);
-            EntitySerializationReader targetReader = new EntitySerializationReader(targetPath);
-            List<EntityProfile> targetEntities = targetReader.getEntityProfiles();
+            List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
             System.out.println("Target Entities: " + targetEntities.size());
             System.out.println();
 
-
             String groundTruthPath = cmd.getOptionValue("gt");
             System.out.println("Ground Truth Path: " + groundTruthPath);
-            GtSerializationReader gtReader = new GtSerializationReader(groundTruthPath);
-            Set<IdDuplicates> gtDuplicates = gtReader.getDuplicatePairs(sourceEntities, targetEntities);
+            Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
             System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
 
 
