@@ -1,7 +1,6 @@
 package ai.uoa.gr.model.lsh;
 
 import info.debatty.java.lsh.LSHMinHash;
-import info.debatty.java.lsh.LSHSuperBit;
 import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 
@@ -14,20 +13,25 @@ import java.util.Set;
 public class MinHash extends LocalitySensitiveHashing {
 
     LSHMinHash lsh;
-    public MinHash(){
-        this.lsh = new LSHMinHash(this.bands, this.buckets, vectorSize, timeSeed);
-        entitiesInBuckets = (ArrayList<Integer>[]) new ArrayList[this.buckets];
-    }
 
     public MinHash(int vectorSize, int r, int buckets) {
         this.vectorSize = vectorSize;
         this.bands = (int) Math.ceil((float) vectorSize /(float) r);
-        this.buckets = buckets;
-        this.lsh = new LSHMinHash(this.bands, this.buckets, vectorSize);
-        entitiesInBuckets = (ArrayList<Integer>[]) new ArrayList[this.buckets];
+        this.numOfBuckets = buckets;
+        this.lsh = new LSHMinHash(this.bands, this.numOfBuckets, vectorSize);
+
+        // array of buckets containing Lists of entity IDs
+        this.buckets = (ArrayList<Integer>[]) new ArrayList[this.numOfBuckets];
     }
 
+    /**
+     * given an entity compute its hash, i.e., the buckets it belongs to
+     * @param e entity
+     * @return the indices of buckets
+     */
     public int[] hash(EntityProfile e){
+
+        // first encode the entity
         StringBuilder sb = new StringBuilder();
         for (Attribute attr : e.getAttributes()){
             sb.append(attr.getValue());
@@ -36,34 +40,47 @@ public class MinHash extends LocalitySensitiveHashing {
         // WARNING: this is not Shingling, but just a byte encoding of the string - last bytes are false
         String eText = sb.toString();
         boolean[] eSignature = this.fromString(eText);
+
+        // compute its hash
         return lsh.hash(eSignature);
     }
 
+    /**
+     * Index a list of entities into the buckets
+     *
+     * @param entities a list of entities
+     */
     public void index(List<EntityProfile> entities){
         for (int i=0; i<entities.size(); i++){
             EntityProfile entity = entities.get(i);
             int[] hashes = hash(entity);
             for (int hash: hashes){
-                if (entitiesInBuckets[hash] == null) {
+                if (buckets[hash] == null) {
                     ArrayList<Integer> bucketEntities = new ArrayList<>();
-                    entitiesInBuckets[hash] = bucketEntities;
+                    buckets[hash] = bucketEntities;
                 }
-                ArrayList<Integer> bucketEntities = entitiesInBuckets[hash];
+                ArrayList<Integer> bucketEntities = buckets[hash];
                 bucketEntities.add(i);
             }
         }
     }
 
+    /**
+     * find the candidates of an entity.
+     * @param entity target entity
+     * @return a set of the IDs of the candidate entities
+     */
     public Set<Integer> query(EntityProfile entity){
         Set<Integer> candidates = new HashSet<>();
         int[] hashes = hash(entity);
         for (int hash: hashes){
-            if(entitiesInBuckets[hash] != null)
-                candidates.addAll(entitiesInBuckets[hash]);
+            if(buckets[hash] != null)
+                candidates.addAll(buckets[hash]);
         }
         return candidates;
     }
 
+    // to encode string into boolean[]
 
     public boolean[] byteToBoolArr(byte b) {
         boolean[] boolArr = new boolean[8];
@@ -73,6 +90,7 @@ public class MinHash extends LocalitySensitiveHashing {
         return boolArr;
     }
 
+    // WARNING: currently I use the binary encoding of the input string
     public boolean[] fromString(String str) {
         byte[] bytes = str.getBytes();
         boolean[] result = new boolean[vectorSize];

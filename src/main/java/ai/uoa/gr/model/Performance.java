@@ -1,5 +1,8 @@
 package ai.uoa.gr.model;
 
+/**
+ * Store the configuration of the best performance
+ */
 public class Performance {
     float bestRecall = 0;
     float bestPrecision = 0;

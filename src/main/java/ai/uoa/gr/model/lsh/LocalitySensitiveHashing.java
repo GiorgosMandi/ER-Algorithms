@@ -18,10 +18,11 @@ public abstract class LocalitySensitiveHashing {
     // number of bands
     int bands = (int) Math.ceil((float) vectorSize /(float) r);
 
-    int buckets = 50;
+    // number of buckets
+    int numOfBuckets = 50;
 
-
-    ArrayList<Integer>[] entitiesInBuckets;
+    // an array of buckets containing a list of entity IDs
+    ArrayList<Integer>[] buckets;
 
     public abstract void index(List<EntityProfile> entities);
 
