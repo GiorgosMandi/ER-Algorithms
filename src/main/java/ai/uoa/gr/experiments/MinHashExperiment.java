@@ -2,11 +2,10 @@ package ai.uoa.gr.experiments;
 
 import ai.uoa.gr.model.MinHashLSH;
 import ai.uoa.gr.model.Performance;
+import ai.uoa.gr.utils.Reader;
 import org.apache.commons.cli.*;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
-import org.scify.jedai.datareader.entityreader.EntitySerializationReader;
-import org.scify.jedai.datareader.groundtruthreader.GtSerializationReader;
 
 import java.util.List;
 import java.util.Set;
@@ -29,6 +28,14 @@ public class MinHashExperiment {
             options.addRequiredOption("s", "source", true, "path to the source dataset");
             options.addRequiredOption("t", "target",true, "path to the target dataset");
             options.addRequiredOption("gt", "groundTruth", true, "path to the Ground Truth dataset");
+
+            options.addOption("minR", true, "minimum value of band size");
+            options.addOption("maxR", true, "maximum value of band size");
+            options.addOption("stepR", true, "step value of band size");
+
+            options.addOption("minBuckets", true, "minimum value of Buckets");
+            options.addOption("maxBuckets", true, "maximum value of Buckets");
+            options.addOption("stepBuckets", true, "step value of Buckets");
 
             CommandLineParser parser = new DefaultParser();
 
