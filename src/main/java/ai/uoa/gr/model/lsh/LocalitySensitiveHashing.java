@@ -1,9 +1,7 @@
 package ai.uoa.gr.model.lsh;
 
-import org.scify.jedai.datamodel.EntityProfile;
+import org.scify.jedai.textmodels.SuperBitUnigrams;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public abstract class LocalitySensitiveHashing {
@@ -22,9 +20,9 @@ public abstract class LocalitySensitiveHashing {
     int numOfBuckets = 50;
 
     // an array of buckets containing a list of entity IDs
-    ArrayList<Integer>[] buckets;
+    Set<Integer>[] buckets;
 
-    public abstract void index(List<EntityProfile> entities);
+    public abstract void index(SuperBitUnigrams[] models);
 
-    public abstract Set<Integer> query(EntityProfile entity);
+    public abstract Set<Integer> query(SuperBitUnigrams model);
 }

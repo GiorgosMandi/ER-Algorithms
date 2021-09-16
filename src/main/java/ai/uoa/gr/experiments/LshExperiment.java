@@ -1,6 +1,7 @@
 package ai.uoa.gr.experiments;
 
 import ai.uoa.gr.model.Performance;
+import ai.uoa.gr.model.TextModel;
 import ai.uoa.gr.model.lsh.LocalitySensitiveHashing;
 import ai.uoa.gr.model.lsh.MinHash;
 import ai.uoa.gr.model.lsh.SuperBit;
@@ -8,6 +9,7 @@ import ai.uoa.gr.utils.Reader;
 import org.apache.commons.cli.*;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
+import org.scify.jedai.textmodels.SuperBitUnigrams;
 
 import java.util.List;
 import java.util.Set;
@@ -15,13 +17,13 @@ import java.util.Set;
 
 public class LshExperiment {
 
-    static int MIN_R = 2;
-    static int MAX_R = 5;
-    static int STEP_R = 1;
+    static int MIN_BANDS = 10;
+    static int MAX_BANDS = 100;
+    static int STEP_BANDS = 20;
 
-    static int MIN_BUCKETS = 10;
-    static int MAX_BUCKETS = 200;
-    static int STEP_BUCKETS = 25;
+    static int MIN_BUCKETS = 200;
+    static int MAX_BUCKETS = 400;
+    static int STEP_BUCKETS = 50;
 
 
     public static void main(String[] args) {
@@ -33,11 +35,11 @@ public class LshExperiment {
             options.addRequiredOption("t", "target",true, "path to the target dataset");
             options.addRequiredOption("gt", "groundTruth", true, "path to the Ground Truth dataset");
 
-            // r-related arguments
-            // r defines the number of rows per band
-            options.addOption("minR", true, "minimum value of band size");
-            options.addOption("maxR", true, "maximum value of band size");
-            options.addOption("stepR", true, "step value of band size");
+            // band-related arguments
+            // band defines the number of rows per band
+            options.addOption("minR", true, "minimum number of band");
+            options.addOption("maxR", true, "maximum number of band");
+            options.addOption("stepR", true, "step value of number of bands");
 
             // buckets-related arguments
             options.addOption("minBuckets", true, "minimum value of Buckets");
@@ -51,49 +53,48 @@ public class LshExperiment {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
 
-            // read source entities
-            String sourcePath = cmd.getOptionValue("s");
-            System.out.println("Source Path: " + sourcePath);
-            List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
-            System.out.println("Source Entities: " + sourceEntities.size());
-            System.out.println();
-
-            // read target entities
-            String targetPath = cmd.getOptionValue("t");
-            System.out.println("Target Path: " + targetPath);
-            List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
-            System.out.println("Target Entities: " + targetEntities.size());
-            System.out.println();
-
-            // read ground-truth file
-            String groundTruthPath = cmd.getOptionValue("gt");
-            System.out.println("Ground Truth Path: " + groundTruthPath);
-            Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
-            System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
-
-
             // use SuperBit or MinHash
             boolean useSuperBit = cmd.hasOption("superBit");
             if (useSuperBit) System.out.println("Using LSH SuperBit");
-             else System.out.println("Using LSH MinHash");
+            else System.out.println("Using LSH MinHash");
 
-             // start Grid Search
-             System.out.println("Grid Search Starts\n\n");
-             int iteration = 1;
-             Performance perf = new Performance();
-             for (int r=MIN_R; r<=MAX_R; r+=STEP_R){
-                 for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
-                     System.out.format("Iteration: %d r:%d buckets:%d\n", iteration, r, buckets);
+            // read source entities
+            String sourcePath = cmd.getOptionValue("s");
+            List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
+            System.out.println("Source Entities: " + sourceEntities.size());
+
+            // read target entities
+            String targetPath = cmd.getOptionValue("t");
+            List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
+            System.out.println("Target Entities: " + targetEntities.size());
+
+            // read ground-truth file
+            String groundTruthPath = cmd.getOptionValue("gt");
+            Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
+            System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
+            System.out.println();
+
+            // create models
+            TextModel textModel = new TextModel(sourceEntities);
+            SuperBitUnigrams[] sourceModels = textModel.getModels();
+            SuperBitUnigrams[] targetModels = textModel.computeModels(targetEntities);
+
+            // start Grid Search
+            System.out.println("== Grid Search ==");
+            System.out.format("Bands: [%d, %d] with step %d\n", MIN_BANDS, MAX_BANDS, STEP_BANDS);
+            System.out.format("Buckets: [%d, %d] with step %d\n", MIN_BUCKETS, MAX_BUCKETS, STEP_BUCKETS);
+            System.out.println("Grid Search Starts\n");
+
+            Performance perf = new Performance();
+             for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
+                 for (int bands=MIN_BANDS; bands<= MAX_BANDS; bands+= STEP_BANDS){
 
                      // initialize LSH
                      LocalitySensitiveHashing lsh;
                      if (useSuperBit)
-                         lsh = new SuperBit(128, r, buckets);
+                         lsh = new SuperBit(sourceModels, bands, buckets);
                      else
-                         lsh = new MinHash(2048, r, buckets);
-
-                     // index source entities
-                     lsh.index(sourceEntities);
+                         lsh = new MinHash(sourceModels, bands, buckets);
 
                      // true positive
                      long tp = 0;
@@ -104,8 +105,8 @@ public class LshExperiment {
                      // for each target entity, find its candidates (query)
                      // find TP by searching the pairs in GT
                      for (int j=0; j<targetEntities.size(); j++) {
-                         EntityProfile entity = targetEntities.get(j);
-                         Set<Integer> candidates = lsh.query(entity);
+                         SuperBitUnigrams model = targetModels[j];
+                         Set<Integer> candidates = lsh.query(model);
                          for (Integer c : candidates) {
                              IdDuplicates pair = new IdDuplicates(c, j);
                              if (gtDuplicates.contains(pair)) tp += 1;
@@ -119,8 +120,8 @@ public class LshExperiment {
                      float f1 = 2*((precision*recall)/(precision+recall));
 
                      // store best performance
-                     perf.conditionalUpdate(recall, precision, f1, r, buckets);
-                     perf.print(recall, precision, f1, r, buckets);
+                     perf.conditionalUpdate(recall, precision, f1, bands, buckets);
+                     perf.print(recall, precision, f1);
                  }
              }
              perf.print();
