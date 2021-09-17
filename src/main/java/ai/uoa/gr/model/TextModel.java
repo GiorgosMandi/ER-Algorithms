@@ -38,8 +38,19 @@ public class TextModel {
         return models;
     }
 
-    public SuperBitUnigrams[] getModels() {
-        return models;
+    public double[][] getVectors() {
+        return getVectors(this.models);
+    }
+
+    public double[][] getVectors(List<EntityProfile> entities) {
+       return getVectors(this.computeModels(entities));
+    }
+
+    public double[][] getVectors(SuperBitUnigrams[] models) {
+        double[][] vectors = new double[models.length][vectorSize];
+        for (int i=0; i<models.length; i++)
+            vectors[i] = models[i].getVector();
+        return vectors;
     }
 
     public int getVectorSize() {

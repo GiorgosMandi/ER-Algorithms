@@ -1,11 +1,12 @@
 package ai.uoa.gr.model.lsh;
 
-import org.scify.jedai.textmodels.SuperBitUnigrams;
+import info.debatty.java.lsh.LSH;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public abstract class LocalitySensitiveHashing {
-    long timeSeed = System.currentTimeMillis();
+    LSH lsh;
 
     // rows per band
     int r = 5;
@@ -22,7 +23,50 @@ public abstract class LocalitySensitiveHashing {
     // an array of bands of buckets containing a set of entity IDs
     Set<Integer>[][] buckets;
 
-    public abstract void index(SuperBitUnigrams[] models);
 
-    public abstract Set<Integer> query(SuperBitUnigrams model);
+    /**
+     * given an entity compute its hash, i.e., the buckets it belongs to
+     * @param vector model
+     * @return the indices of buckets
+     */
+    public abstract int[] hash(double[] vector);
+
+
+    /**
+     * Index a list of entities into the buckets
+     *
+     * @param vectors a list of models
+     */
+    public void index(double[][] vectors){
+        this.buckets = (HashSet<Integer>[][]) new HashSet[this.bands][this.numOfBuckets];
+        for (int i=0; i<vectors.length; i++){
+            int[] hashes = hash(vectors[i]);
+            for (int b=0; b<hashes.length; b++){
+                int hash = hashes[b];
+                if (buckets[b][hash] == null) {
+                    HashSet<Integer> bucketEntities = new HashSet<>();
+                    buckets[b][hash] = bucketEntities;
+                }
+                Set<Integer> bucketEntities = buckets[b][hash];
+                bucketEntities.add(i);
+            }
+        }
+    }
+
+
+    /**e
+     * find the candidates of an entity.
+     * @param vector target model
+     * @return a set of the IDs of the candidate entities
+     */
+    public Set<Integer> query(double[] vector){
+        Set<Integer> candidates = new HashSet<>();
+        int[] hashes = hash(vector);
+        for (int b=0; b<hashes.length; b++){
+            int hash = hashes[b];
+            if(buckets[b][hash] != null)
+                candidates.addAll(buckets[b][hash]);
+        }
+        return candidates;
+    }
 }

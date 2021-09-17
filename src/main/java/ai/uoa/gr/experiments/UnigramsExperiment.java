@@ -9,7 +9,6 @@ import ai.uoa.gr.utils.Reader;
 import org.apache.commons.cli.*;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
-import org.scify.jedai.textmodels.SuperBitUnigrams;
 
 import java.util.Calendar;
 import java.util.List;
@@ -77,8 +76,8 @@ public class UnigramsExperiment {
 
             // create models
             TextModel textModel = new TextModel(sourceEntities);
-            SuperBitUnigrams[] sourceModels = textModel.getModels();
-            SuperBitUnigrams[] targetModels = textModel.computeModels(targetEntities);
+            double[][] sVectors = textModel.getVectors();
+            double[][] tVectors = textModel.getVectors(targetEntities);
 
             // start Grid Search
             System.out.println("== Grid Search ==");
@@ -94,9 +93,9 @@ public class UnigramsExperiment {
                      // initialize LSH
                      LocalitySensitiveHashing lsh;
                      if (useSuperBit)
-                         lsh = new SuperBit(sourceModels, bands, buckets, textModel.getVectorSize());
+                         lsh = new SuperBit(sVectors, bands, buckets, textModel.getVectorSize());
                      else
-                         lsh = new MinHash(sourceModels, bands, buckets, textModel.getVectorSize());
+                         lsh = new MinHash(sVectors, bands, buckets, textModel.getVectorSize());
 
                      // true positive
                      long tp = 0;
@@ -107,8 +106,8 @@ public class UnigramsExperiment {
                      // for each target entity, find its candidates (query)
                      // find TP by searching the pairs in GT
                      for (int j=0; j<targetEntities.size(); j++) {
-                         SuperBitUnigrams model = targetModels[j];
-                         Set<Integer> candidates = lsh.query(model);
+                         double[] vector = tVectors[j];
+                         Set<Integer> candidates = lsh.query(vector);
                          for (Integer c : candidates) {
                              IdDuplicates pair = new IdDuplicates(c, j);
                              if (gtDuplicates.contains(pair)) tp += 1;
