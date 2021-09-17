@@ -1,6 +1,5 @@
 package ai.uoa.gr.model;
 
-import ai.uoa.gr.utils.Reader;
 import com.beust.jcommander.internal.Lists;
 import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
@@ -12,7 +11,6 @@ public class ShinglingModel {
     List<String> ngrams;
     StringBuilder sb = new StringBuilder();
     int N;
-
 
     public ShinglingModel(List<EntityProfile> entities, int n){
         this.N = n;
@@ -76,9 +74,8 @@ public class ShinglingModel {
         return vector;
     }
 
-
     public boolean[][] booleanVectorization(List<EntityProfile> entities){
-        boolean[][] vectors = new boolean[this.ngrams.size()][entities.size()];
+        boolean[][] vectors = new boolean[entities.size()][this.ngrams.size()];
         for(int i=0; i<entities.size(); i++){
             vectors[i] = getBooleanVector(entities.get(i));
         }
@@ -86,7 +83,7 @@ public class ShinglingModel {
     }
 
     public int[][] vectorization(List<EntityProfile> entities){
-        int[][] vectors = new int[this.ngrams.size()][entities.size()];
+        int[][] vectors = new int[entities.size()][this.ngrams.size()];
         for(int i=0; i<entities.size(); i++){
             vectors[i] = getIntegerVector(entities.get(i));
         }
@@ -97,20 +94,7 @@ public class ShinglingModel {
         return ngrams;
     }
 
-
-
-    public static void main(String[] args) {
-
-        List<EntityProfile> sourceEntities = Reader.readSerialized("/home/gmandi/Documents/Extreme-Earth/Entity-Resolution/ER-data/Clean-Clean/restaurant1Profiles");
-        System.out.println("Source Entities: " + sourceEntities.size());
-
-        ShinglingModel model = new ShinglingModel(sourceEntities, 2);
-        List<String> ngrams = model.getNgrams();
-
-        boolean[][] sourceVectors = model.booleanVectorization(sourceEntities);
-        int[][] sourceVectorsInt = model.vectorization(sourceEntities);
-
-
-        System.out.println();
+    public int getVectorSize(){
+        return ngrams.size();
     }
 }
