@@ -10,12 +10,12 @@ public class SuperBit extends LocalitySensitiveHashing{
 
     LSHSuperBit lsh;
 
-    public SuperBit(SuperBitUnigrams[] models, int bands, int buckets) {
-        vectorSize = models[0].getVector().length;
+    public SuperBit(SuperBitUnigrams[] models, int bands, int buckets, int vectorSize) {
+        this.vectorSize = vectorSize;
         this.bands = bands;
         this.numOfBuckets = buckets;
         r = vectorSize/bands;
-        this.lsh = new LSHSuperBit(this.bands, this.numOfBuckets, vectorSize);
+        this.lsh = new LSHSuperBit(this.bands, this.numOfBuckets, this.vectorSize);
 
         System.out.format("SuperBit: Bands %d, r: %d, Buckets: %d, Vector Size: %d\n", this.bands, r, numOfBuckets, vectorSize);
         index(models);
@@ -37,22 +37,22 @@ public class SuperBit extends LocalitySensitiveHashing{
      * @param models a list of models
      */
     public void index(SuperBitUnigrams[] models){
-        this.buckets = (HashSet<Integer>[]) new HashSet[this.numOfBuckets];
+        this.buckets = (HashSet<Integer>[][]) new HashSet[this.bands][this.numOfBuckets];
         for (int i=0; i<models.length; i++){
             int[] hashes = hash(models[i]);
-            for (int hash: hashes){
-                if (buckets[hash] == null) {
+            for (int b=0; b<hashes.length; b++){
+                int hash = hashes[b];
+                if (buckets[b][hash] == null) {
                     HashSet<Integer> bucketEntities = new HashSet<>();
-                    buckets[hash] = bucketEntities;
+                    buckets[b][hash] = bucketEntities;
                 }
-                Set<Integer> bucketEntities = buckets[hash];
+                Set<Integer> bucketEntities = buckets[b][hash];
                 bucketEntities.add(i);
             }
         }
     }
 
-
-    /**
+    /**e
      * find the candidates of an entity.
      * @param model target model
      * @return a set of the IDs of the candidate entities
@@ -60,9 +60,10 @@ public class SuperBit extends LocalitySensitiveHashing{
     public Set<Integer> query(SuperBitUnigrams model){
         Set<Integer> candidates = new HashSet<>();
         int[] hashes = hash(model);
-        for (int hash: hashes){
-            if(buckets[hash] != null)
-                candidates.addAll(buckets[hash]);
+        for (int b=0; b<hashes.length; b++){
+            int hash = hashes[b];
+            if(buckets[b][hash] != null)
+                candidates.addAll(buckets[b][hash]);
         }
         return candidates;
     }

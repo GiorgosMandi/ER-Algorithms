@@ -11,14 +11,15 @@ import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
 import org.scify.jedai.textmodels.SuperBitUnigrams;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
 
-public class LshExperiment {
+public class UnigramsExperiment {
 
-    static int MIN_BANDS = 10;
-    static int MAX_BANDS = 100;
+    static int MIN_BANDS = 200;
+    static int MAX_BANDS = 500;
     static int STEP_BANDS = 20;
 
     static int MIN_BUCKETS = 200;
@@ -37,9 +38,9 @@ public class LshExperiment {
 
             // band-related arguments
             // band defines the number of rows per band
-            options.addOption("minR", true, "minimum number of band");
-            options.addOption("maxR", true, "maximum number of band");
-            options.addOption("stepR", true, "step value of number of bands");
+            options.addOption("minBand", true, "minimum number of band");
+            options.addOption("maxBand", true, "maximum number of band");
+            options.addOption("stepBand", true, "step value of number of bands");
 
             // buckets-related arguments
             options.addOption("minBuckets", true, "minimum value of Buckets");
@@ -89,12 +90,13 @@ public class LshExperiment {
              for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
                  for (int bands=MIN_BANDS; bands<= MAX_BANDS; bands+= STEP_BANDS){
 
+                     long time = Calendar.getInstance().getTimeInMillis();
                      // initialize LSH
                      LocalitySensitiveHashing lsh;
                      if (useSuperBit)
-                         lsh = new SuperBit(sourceModels, bands, buckets);
+                         lsh = new SuperBit(sourceModels, bands, buckets, textModel.getVectorSize());
                      else
-                         lsh = new MinHash(sourceModels, bands, buckets);
+                         lsh = new MinHash(sourceModels, bands, buckets, textModel.getVectorSize());
 
                      // true positive
                      long tp = 0;
@@ -120,7 +122,8 @@ public class LshExperiment {
                      float f1 = 2*((precision*recall)/(precision+recall));
 
                      // store best performance
-                     perf.conditionalUpdate(recall, precision, f1, bands, buckets);
+                     time = Calendar.getInstance().getTimeInMillis() - time;
+                     perf.conditionalUpdate(recall, precision, f1, bands, buckets, verifications, tp, time);
                      perf.print(recall, precision, f1);
                  }
              }

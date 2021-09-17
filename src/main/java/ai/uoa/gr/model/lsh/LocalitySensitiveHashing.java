@@ -19,8 +19,8 @@ public abstract class LocalitySensitiveHashing {
     // number of buckets
     int numOfBuckets = 50;
 
-    // an array of buckets containing a list of entity IDs
-    Set<Integer>[] buckets;
+    // an array of bands of buckets containing a set of entity IDs
+    Set<Integer>[][] buckets;
 
     public abstract void index(SuperBitUnigrams[] models);
 
