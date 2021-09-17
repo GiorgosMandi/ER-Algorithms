@@ -24,10 +24,11 @@ public class TextModel {
         vectorSize = models[0].getVector().length;
     }
 
-    public SuperBitUnigrams[] computeModels(List<EntityProfile> profiles){
+
+    public SuperBitUnigrams[] computeModels(List<EntityProfile> entities){
         int counter = 0;
-        final SuperBitUnigrams[] models = new SuperBitUnigrams[profiles.size()];
-        for (EntityProfile profile : profiles) {
+        final SuperBitUnigrams[] models = new SuperBitUnigrams[entities.size()];
+        for (EntityProfile profile : entities) {
             SuperBitUnigrams model = new SuperBitUnigrams(profile.getEntityUrl());
             for (Attribute attribute : profile.getAttributes()) {
                 model.updateModel(attribute.getValue());
