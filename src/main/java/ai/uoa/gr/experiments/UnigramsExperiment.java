@@ -123,7 +123,7 @@ public class UnigramsExperiment {
                      // store best performance
                      time = Calendar.getInstance().getTimeInMillis() - time;
                      perf.conditionalUpdate(recall, precision, f1, bands, buckets, verifications, tp, time);
-                     perf.print(recall, precision, f1);
+                     perf.print(recall, precision, f1, verifications, tp, time);
                  }
              }
              perf.print();

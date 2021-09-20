@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Set;
 
 public class ShinglingExperiment {
-    static int MIN_BANDS = 100;
-    static int MAX_BANDS = 220;
-    static int STEP_BANDS = 20;
+    static int MIN_BANDS = 10;
+    static int MAX_BANDS = 200;
+    static int STEP_BANDS = 50;
 
-    static int MIN_BUCKETS = 100;
+    static int MIN_BUCKETS = 20;
     static int MAX_BUCKETS = 400;
     static int STEP_BUCKETS = 50;
 
@@ -141,7 +141,7 @@ public class ShinglingExperiment {
                     // store best performance
                     time = Calendar.getInstance().getTimeInMillis() - time;
                     perf.conditionalUpdate(recall, precision, f1, bands, buckets, verifications, tp, time);
-                    perf.print(recall, precision, f1);
+                    perf.print(recall, precision, f1, verifications, tp, time);
                 }
             }
             perf.print();

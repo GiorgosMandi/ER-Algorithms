@@ -51,11 +51,11 @@ public class Performance {
         System.out.println("\n======= BEST PERFORMANCE =======");
         System.out.println("#Bands:\t"+ bestBands);
         System.out.println("#Buckets:\t"+ bestBuckets);
-        print(bestRecall, bestPrecision, bestF1);
+        print(bestRecall, bestPrecision, bestF1, verifications, tp, time);
 
     }
 
-    public void print(float recall, float precision, float f1){
+    public void print(float recall, float precision, float f1, long verifications, long tp, long time){
         System.out.println("Recall:\t"+recall);
         System.out.println("Precision:\t"+precision);
         System.out.println("F1-score:\t"+f1);
