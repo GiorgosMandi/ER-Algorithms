@@ -1,13 +1,27 @@
-# LSH-Experiments
+# ER-Experiments
 
-A Java application for experimenting with the LSH algorithms, MinHash and SuperBit. Enables the detection of the best configurations using Grid Search.
-The LSH implementation is based on [java-LSH](https://github.com/tdebatty/java-LSH)
+A Java application for experimenting with the Entity Resolution algorithms. The implemented algorithms are the following:
+
+- LSH
+  - MinHash
+  - SuperBit
+- Token-based Similarity Joins
+  - Allpairs
+  - PPJoin
+  - PartEnum
+- Edit-distance-based Similarity Joins
 
 ## Build 
 
     mvn package
 
-## Run
+
+## LSH
+
+Implementations of MinHash and SuperBit, with Singling as the main vectorization technique. 
+Enables the detection of the best configurations using Grid Search. The LSH implementation is based on java-LSH
+
+### Run
 
     java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.experiments.UnigramsExperiment -s /path/to/source -t /path/to/target -gt /path/to/groundTruth
 
