@@ -1,4 +1,4 @@
-package ai.uoa.gr.model.lsh;
+package ai.uoa.gr.lsh;
 
 import info.debatty.java.lsh.LSH;
 

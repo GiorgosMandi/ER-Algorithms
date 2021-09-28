@@ -1,10 +1,10 @@
-package ai.uoa.gr.experiments;
+package ai.uoa.gr.lsh.experiments;
 
-import ai.uoa.gr.model.Performance;
+import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.model.ShinglingModel;
-import ai.uoa.gr.model.lsh.LocalitySensitiveHashing;
-import ai.uoa.gr.model.lsh.MinHash;
-import ai.uoa.gr.model.lsh.SuperBit;
+import ai.uoa.gr.lsh.LocalitySensitiveHashing;
+import ai.uoa.gr.lsh.MinHash;
+import ai.uoa.gr.lsh.SuperBit;
 import ai.uoa.gr.utils.Reader;
 import org.apache.commons.cli.*;
 import org.scify.jedai.datamodel.EntityProfile;
@@ -103,7 +103,7 @@ public class ShinglingExperiment {
             System.out.format("Buckets: [%d, %d] with step %d\n", MIN_BUCKETS, MAX_BUCKETS, STEP_BUCKETS);
             System.out.println("Grid Search Starts\n");
 
-            Performance perf = new Performance();
+            LshPerformance perf = new LshPerformance();
             for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
                 for (int bands=MIN_BANDS; bands<= MAX_BANDS; bands+= STEP_BANDS){
 
