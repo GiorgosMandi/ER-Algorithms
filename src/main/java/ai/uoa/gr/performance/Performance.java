@@ -17,7 +17,7 @@ public abstract class Performance {
     boolean satisfy(float recall, float precision){
         if (recall >= RECALL_LIMIT){
             if (bestRecall >= RECALL_LIMIT)
-                return bestPrecision <= precision;
+                return precision >= bestPrecision;
             else
                 return true;
         }
@@ -33,5 +33,14 @@ public abstract class Performance {
         System.out.println("Time:\t"+time);
 
         System.out.println();
+    }
+
+    protected void update(float recall, float precision, float f1, long verifications, long tp, long time){
+        this.bestPrecision = precision;
+        this.bestRecall = recall;
+        this.bestF1 = f1;
+        this.verifications = verifications;
+        this.tp = tp;
+        this.time = time;
     }
 }
