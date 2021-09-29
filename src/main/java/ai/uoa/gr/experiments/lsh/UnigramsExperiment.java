@@ -1,4 +1,4 @@
-package ai.uoa.gr.algorithms.lsh.experiments;
+package ai.uoa.gr.experiments.lsh;
 
 import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.model.TextModel;

@@ -23,7 +23,7 @@ Enables the detection of the best configurations using Grid Search. The LSH impl
 
 ### Run
 
-    java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.algorithms.lsh.experiments.UnigramsExperiment -s /path/to/source -t /path/to/target -gt /path/to/groundTruth
+    java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.experiments.lsh.UnigramsExperiment -s /path/to/source -t /path/to/target -gt /path/to/groundTruth
 
 By default, it will use the MinHash algorithm and [SuperBitUnigram](https://github.com/scify/JedAIToolkit/blob/9f14506d68bc3a2a81b4a83340fea48b91fa9103/src/main/java/org/scify/jedai/textmodels/SuperBitUnigrams.java#L25)
 vectorization. To execute SuperBit use `-superBit` argument.
@@ -35,4 +35,4 @@ Additional arguments:
 
 To use Shingling run:
 
-    java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.algorithms.lsh.experiments.ShinglingExperiment -n NGRAM_SIZE -s /path/to/source -t /path/to/target -gt /path/to/groundTruth
+    java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.experiments.lsh.ShinglingExperiment -n NGRAM_SIZE -s /path/to/source -t /path/to/target -gt /path/to/groundTruth
