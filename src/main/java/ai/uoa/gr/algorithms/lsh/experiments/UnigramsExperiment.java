@@ -1,10 +1,10 @@
-package ai.uoa.gr.lsh.experiments;
+package ai.uoa.gr.algorithms.lsh.experiments;
 
 import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.model.TextModel;
-import ai.uoa.gr.lsh.LocalitySensitiveHashing;
-import ai.uoa.gr.lsh.MinHash;
-import ai.uoa.gr.lsh.SuperBit;
+import ai.uoa.gr.algorithms.lsh.LocalitySensitiveHashing;
+import ai.uoa.gr.algorithms.lsh.MinHash;
+import ai.uoa.gr.algorithms.lsh.SuperBit;
 import ai.uoa.gr.utils.Reader;
 import org.apache.commons.cli.*;
 import org.scify.jedai.datamodel.EntityProfile;

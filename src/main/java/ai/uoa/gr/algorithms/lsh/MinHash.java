@@ -1,4 +1,4 @@
-package ai.uoa.gr.lsh;
+package ai.uoa.gr.algorithms.lsh;
 
 import info.debatty.java.lsh.LSHMinHash;
 
