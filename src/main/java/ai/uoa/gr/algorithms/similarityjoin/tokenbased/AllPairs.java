@@ -15,7 +15,8 @@ public class AllPairs {
     float Tj;
     List<String> source;
     Map<Character, Integer> frequenciesMap;
-    Map<Character, List<Integer>> prefixInvertedIndex;
+    // Char -> (index in source, index of char in string)
+    Map<Character, List<Pair<Integer, Integer>>> prefixInvertedIndex;
 
     public AllPairs(List<String> source, float t) {
         this.Tj = t;
@@ -49,15 +50,17 @@ public class AllPairs {
      * @param source    dataset based on which we will build the Inverted Index
      * @return          an Inverted Index
      */
-    private Map<Character, List<Integer>> buildPrefixInvertedIndex(List<String> source) {
-        Map<Character, List<Integer>> invertedIndex = new HashMap<>();
+    private Map<Character, List<Pair<Integer, Integer>>> buildPrefixInvertedIndex(List<String> source) {
+        Map<Character, List<Pair<Integer, Integer>>> invertedIndex = new HashMap<>();
         for (int i =0; i<source.size(); i++) {
             String s = source.get(i);
-            Set<Character> prefix = getPrefix(s, this.Tj);
-            for (char p: prefix){
-                if (!invertedIndex.containsKey(p))
-                    invertedIndex.put(p, new LinkedList<>());
-                invertedIndex.get(p).add(i);
+            List<Pair<Character, Integer>> prefix = getPrefix(s, this.Tj);
+            for (Pair<Character, Integer> p: prefix){
+                char prefixChar = p.getValue0();
+                int prefixCharIndex = p.getValue1();
+                if (!invertedIndex.containsKey(prefixChar))
+                    invertedIndex.put(prefixChar, new LinkedList<>());
+                invertedIndex.get(prefixChar).add(new Pair<>(i, prefixCharIndex));
             }
         }
         return invertedIndex;
@@ -72,21 +75,24 @@ public class AllPairs {
      * @param tj a Jaccard threshold used to compute the size of the prefix
      * @return  string's prefix
      */
-    public Set<Character> getPrefix(String s, float tj) {
+    public List<Pair<Character, Integer>> getPrefix(String s, float tj) {
         int prefixSize = getPrefixSize(s, tj);
         char[] characters = s.toCharArray();
-        TreeSet<Pair<Character, Integer>> prefixWithFrequencies = new TreeSet<>(new PairsComparator());
-        for (char c : characters) {
-            Pair<Character, Integer> pair = new Pair<>(c, this.frequenciesMap.getOrDefault(c, Integer.MAX_VALUE));
+        // a treeSet where the key is the char and its index and the value is char's frequency
+        TreeSet<Pair<Pair<Character, Integer>, Integer>> prefixWithFrequencies = new TreeSet<>(new PairsComparator());
+        for (int i=0; i<characters.length; i++){
+            char c = characters[i];
+            Pair<Pair<Character, Integer>, Integer> pair = new Pair<>(new Pair<>(c, i), this.frequenciesMap.getOrDefault(c, Integer.MAX_VALUE));
             prefixWithFrequencies.add(pair);
             if (prefixWithFrequencies.size() > prefixSize)
                 prefixWithFrequencies.pollLast();
         }
-        return prefixWithFrequencies.stream().map(Pair::getValue0).collect(Collectors.toSet());
+        return prefixWithFrequencies.stream().map(Pair::getValue0).collect(Collectors.toList());
     }
 
     /**
      *  Given a String and a Jaccard threshold get the size of its prefix.
+     *      πr = |r| - ceil(tj * |r|) + 1
      * @param s a string
      * @param tj a Jaccard threshold
      * @return the size of its prefix
@@ -104,7 +110,7 @@ public class AllPairs {
      * @return true if the strings have similar sizes
      */
     public boolean lengthFilter(String s, String t, float tj){
-        return tj *t.length() <= s.length() || s.length() <= t.length()/tj;
+        return tj *t.length() <= s.length() && s.length() <= t.length()/tj;
     }
 
     /**
@@ -114,16 +120,19 @@ public class AllPairs {
      * @param t a target string
      * @return a list of candidates' indices
      */
-    public List<Integer> query(String t){
-        List<Integer> candidates = new LinkedList<>();
-        Set<Character> prefix = getPrefix(t, this.Tj);
-        for (char p: prefix) {
-            List<Integer> prefixCandidates = this.prefixInvertedIndex
-                    .getOrDefault(p, Collections.emptyList())
+    public Set<Integer> query(String t){
+        Set<Integer> candidates = new HashSet<>();
+        List<Pair<Character, Integer>> prefix = getPrefix(t, this.Tj);
+        for (Pair<Character, Integer> p: prefix){
+            char prefixChar = p.getValue0();
+            int prefixCharIndex = p.getValue1();
+            List<Integer> preCandidates = this.prefixInvertedIndex
+                    .getOrDefault(prefixChar, Collections.emptyList())
                     .stream()
+                    .map(Pair::getValue0)
                     .filter(i -> this.lengthFilter(this.source.get(i), t, this.Tj))
                     .collect(Collectors.toList());
-            candidates.addAll(prefixCandidates);
+            candidates.addAll(preCandidates);
         }
         return candidates;
     }
