@@ -1,6 +1,7 @@
 package ai.uoa.gr.experiments.simJoin;
 
 import ai.uoa.gr.algorithms.similarityjoin.tokenbased.AllPairs;
+import ai.uoa.gr.algorithms.similarityjoin.tokenbased.PPJoin;
 import ai.uoa.gr.performance.SimJoinPerformance;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
@@ -10,12 +11,13 @@ import org.scify.jedai.datamodel.IdDuplicates;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
  * @author George Mandilaras (NKUA)
  */
-public class AllPairsExp {
+public class GridSearch {
 
     static final float MIN_THRESHOLD = 0.7f;
     static final float MAX_THRESHOLD = 0.9f;
@@ -28,13 +30,13 @@ public class AllPairsExp {
             options.addRequiredOption("s", "source", true, "path to the source dataset");
             options.addRequiredOption("t", "target", true, "path to the target dataset");
             options.addRequiredOption("gt", "groundTruth", true, "path to the Ground Truth dataset");
-            options.addOption("tj", "threshold", true, "Jaccard Similarity Threshold");
+            options.addOption("sj", "sjAlgorithm", true, "algorithm to run");
 
             // parse CLI arguments
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
 
-            float tj = cmd.hasOption("tj") ? Float.parseFloat(cmd.getOptionValue("tj")) : 0.78f;
+            String joinAlgorithm = cmd.hasOption("sj") ? cmd.getOptionValue("sj") : "AllPairs";
 
             // read source entities
             String sourcePath = cmd.getOptionValue("s");
@@ -55,17 +57,21 @@ public class AllPairsExp {
             System.out.println("Exhausted Search: "+ sourceEntities.size()*targetEntities.size());
             System.out.println();
 
-
             SimJoinPerformance performance = new SimJoinPerformance();
-
             for (float t=MIN_THRESHOLD; t<=MAX_THRESHOLD; t+=STEP_THRESHOLD){
                 long tp = 0;
                 long verifications = 0;
                 long time = Calendar.getInstance().getTimeInMillis();
-                AllPairs allPairs = new AllPairs(sourceSTR, t);
+
+                AllPairs similarityJoin;
+                if (joinAlgorithm.toLowerCase(Locale.ROOT).equals("ppjoin"))
+                    similarityJoin = new PPJoin(sourceSTR, t);
+                else
+                    similarityJoin = new AllPairs(sourceSTR, t);
+
                 for (int j=0; j<targetSTR.size(); j++) {
                     String target = targetSTR.get(j);
-                    Set<Integer> candidates = allPairs.query(target);
+                    Set<Integer> candidates = similarityJoin.query(target);
                     for (Integer c : candidates) {
                         IdDuplicates pair = new IdDuplicates(c, j);
                         if (gtDuplicates.contains(pair)) tp += 1;
@@ -78,7 +84,7 @@ public class AllPairsExp {
                 float f1 = 2*((precision*recall)/(precision+recall));
                 time = Calendar.getInstance().getTimeInMillis() - time;
 
-                performance.conditionalUpdate(recall, precision, f1, tj, verifications, tp, time);
+                performance.conditionalUpdate(recall, precision, f1, t, verifications, tp, time);
                 System.out.println("Threshold: " + t);
                 performance.print(recall, precision, f1, verifications, tp, time);
             }
