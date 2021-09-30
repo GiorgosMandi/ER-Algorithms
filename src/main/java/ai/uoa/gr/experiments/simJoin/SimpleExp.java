@@ -30,8 +30,8 @@ public class SimpleExp {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
 
-            float tj = cmd.hasOption("tj") ? Float.parseFloat(cmd.getOptionValue("tj")) : 0.78f;
-            String joinAlgorithm = cmd.hasOption("sj") ? cmd.getOptionValue("sj") : "AllPairs";
+            float tj = cmd.hasOption("tj") ? Float.parseFloat(cmd.getOptionValue("tj")) : 0.75f;
+            String joinAlgorithm = cmd.hasOption("sj") ? cmd.getOptionValue("sj") : "ppjoin";
 
             // read source entities
             String sourcePath = cmd.getOptionValue("s");
@@ -50,6 +50,7 @@ public class SimpleExp {
             Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
             System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
             System.out.println("Exhausted Search: "+ sourceEntities.size()*targetEntities.size());
+            System.out.println("Similarity Join: "+joinAlgorithm.toUpperCase(Locale.ROOT));
             System.out.println();
 
 

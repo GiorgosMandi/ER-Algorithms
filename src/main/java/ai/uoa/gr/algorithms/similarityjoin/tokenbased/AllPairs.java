@@ -5,6 +5,7 @@ import org.javatuples.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author George Mandilaras (NKUA)
@@ -15,7 +16,7 @@ public class AllPairs {
     float Tj;
     List<String> source;
     Map<Character, Integer> frequenciesMap;
-    // Char -> (index in source, index of char in string)
+    // Char -> (index in source, index of char in string based on the order of its frequencies)
     Map<Character, List<Pair<Integer, Integer>>> prefixInvertedIndex;
 
     public AllPairs(List<String> source, float t) {
@@ -78,16 +79,17 @@ public class AllPairs {
     public List<Pair<Character, Integer>> getPrefix(String s, float tj) {
         int prefixSize = getPrefixSize(s, tj);
         char[] characters = s.toCharArray();
-        // a treeSet where the key is the char and its index and the value is char's frequency
-        TreeSet<Pair<Pair<Character, Integer>, Integer>> prefixWithFrequencies = new TreeSet<>(new PairsComparator());
-        for (int i=0; i<characters.length; i++){
-            char c = characters[i];
-            Pair<Pair<Character, Integer>, Integer> pair = new Pair<>(new Pair<>(c, i), this.frequenciesMap.getOrDefault(c, Integer.MAX_VALUE));
+        // a treeSet where the key is the char and its index based on the frequencies' order and the value is char's frequency
+        TreeSet<Pair<Character, Integer>> prefixWithFrequencies = new TreeSet<>(new PairsComparator());
+        for (char c : characters) {
+            Pair<Character, Integer> pair = new Pair<>(c, this.frequenciesMap.getOrDefault(c, Integer.MAX_VALUE));
             prefixWithFrequencies.add(pair);
             if (prefixWithFrequencies.size() > prefixSize)
                 prefixWithFrequencies.pollLast();
         }
-        return prefixWithFrequencies.stream().map(Pair::getValue0).collect(Collectors.toList());
+        return IntStream.range(0, prefixWithFrequencies.size())
+                .mapToObj(i -> new Pair<>(Objects.requireNonNull(prefixWithFrequencies.pollFirst()).getValue0(), i))
+                .collect(Collectors.toList());
     }
 
     /**

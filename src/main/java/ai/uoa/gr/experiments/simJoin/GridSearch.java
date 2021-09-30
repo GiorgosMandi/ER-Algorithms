@@ -36,7 +36,7 @@ public class GridSearch {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
 
-            String joinAlgorithm = cmd.hasOption("sj") ? cmd.getOptionValue("sj") : "AllPairs";
+            String joinAlgorithm = cmd.hasOption("sj") ? cmd.getOptionValue("sj") : "ppjoin";
 
             // read source entities
             String sourcePath = cmd.getOptionValue("s");

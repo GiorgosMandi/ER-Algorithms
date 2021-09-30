@@ -2,11 +2,11 @@ package ai.uoa.gr.algorithms.similarityjoin.tokenbased;
 
 import org.javatuples.Pair;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.Math.ceil;
+import static java.lang.Math.min;
 
 /**
  * @author George Mandilaras (NKUA)
@@ -15,13 +15,6 @@ public class PPJoin extends AllPairs{
 
     public PPJoin(List<String> source, float t) {
         super(source, t);
-    }
-
-    public boolean positionalFiltering(String s, String t, float tj){
-        // TODO
-        float a = (float) Math.ceil( (tj/(tj+1)) * (s.length() + t.length()) );
-//        ubound ← 1 +min(|x| − i, |y| − j);
-        return true;
     }
 
 
@@ -33,20 +26,44 @@ public class PPJoin extends AllPairs{
      * @return a list of candidates' indices
      */
     public Set<Integer> query(String t){
-        Set<Integer> candidates = new HashSet<>();
-        List<Pair<Character, Integer>> prefix = getPrefix(t, this.Tj);
-        for (Pair<Character, Integer> p: prefix){
-            char prefixChar = p.getValue0();
-            int prefixCharIndex = p.getValue1();
-            List<Integer> preCandidates = this.prefixInvertedIndex
-                    .getOrDefault(prefixChar, Collections.emptyList())
-                    .stream()
-                    .filter(i -> this.lengthFilter(this.source.get(i), t, this.Tj) &&
-                            this.positionalFiltering(this.source.get(i), t, this.Tj))
+        // in A[s] will accumulate the amount of overlaps that occur in the prefixes of (s, t)
+        Map<Integer, Integer> A = new HashMap<>();
+        List<Pair<Character, Integer>> targetPrefix = getPrefix(t, this.Tj);
+        for (Pair<Character, Integer> p: targetPrefix) {
+            char targetPrefixChar = p.getValue0();
+            int targetPrefixCharIndex = p.getValue1();
+
+            // query PrefixInvertedIndex to get the pre-candidates and filter them using the length filter
+            List<Pair<Integer, Integer>> preCandidates = this.prefixInvertedIndex
+                    .getOrDefault(targetPrefixChar, Collections.emptyList())
+                    .stream().filter(pair -> lengthFilter(source.get(pair.getValue0()), t, this.Tj))
                     .collect(Collectors.toList());
-            candidates.addAll(preCandidates);
+
+            // for each pre-candidate examine the positional filter
+            for(Pair<Integer, Integer> preCandidate: preCandidates){
+                int preCandidateIndex = preCandidate.getValue0();
+                int preCandidatePrefixIndex = preCandidate.getValue1();
+                String s = source.get(preCandidateIndex);
+
+                // from jaccard to overlap threshold
+                int overlapThreshold = (int) ceil( (this.Tj/(this.Tj+1)) * (s.length() + t.length()) );
+
+                // admit pairs as a candidate pair only if its upper bound is no less than the threshold overlapThreshold
+                // upperBoundOverlap is an upper bound of the overlap between right partitions of (s, t) with respect
+                // to the current prefix token targetPrefixChar
+                int upperBoundOverlap = 1 + min(s.length()-preCandidatePrefixIndex, t.length()-targetPrefixCharIndex);
+
+                // upperBoundOverlap holds the overlap between right partitions and
+                // currently A holds the overlap of the left partitions between (s, t)
+                if (A.getOrDefault(preCandidateIndex, 0) + upperBoundOverlap >= overlapThreshold)
+                    A.put(preCandidateIndex, A.getOrDefault(preCandidateIndex, 0) + 1);
+                else
+                    A.put(preCandidateIndex, 0);
+            }
         }
-        return candidates;
+        return A.keySet().stream()
+                .filter(k -> A.getOrDefault(k, 0) > 0)
+                .collect(Collectors.toSet());
     }
 
 }
