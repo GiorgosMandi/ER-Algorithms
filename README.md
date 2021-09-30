@@ -1,6 +1,8 @@
 # ER-Experiments
 
-A Java application for experimenting with the Entity Resolution algorithms. The implemented algorithms are the following:
+A Java application for experimenting with Entity Resolution algorithms. All algorithms are implemented in an Index & Query approach,
+in which we use the source dataset to build the necessary data structures of the algorithms, and for each instance of the target dataset
+we query the structures to retrieve the candidate pairs. The implemented algorithms are the following:
 
 - LSH
   - MinHash
@@ -36,3 +38,11 @@ Additional arguments:
 To use Shingling run:
 
     java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.experiments.lsh.ShinglingExperiment -n NGRAM_SIZE -s /path/to/source -t /path/to/target -gt /path/to/groundTruth
+
+## Token-based Similarity Joins
+
+Implementations of AllPairs, PPJoin and PartEnum. Enables the detection of the best configurations using Grid Search.
+
+### Run
+
+    java -cp target/LSH-Experiments-1.0-SNAPSHOT.jar ai.uoa.gr.experiments.simJoin.GridSearch -s /path/to/source -t /path/to/target -gt /path/to/groundTruth -sj <allpairs | ppjoin | partenum>
