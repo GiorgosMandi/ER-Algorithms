@@ -13,7 +13,6 @@ public class MinHash extends LocalitySensitiveHashing {
         r = vectorSize/bands;
         this.lsh = new LSHMinHash(this.bands, this.numOfBuckets, this.vectorSize);
 
-        System.out.format("MINHASH: Bands %d, r: %d, Buckets: %d, Vector Size: %d\n", bands, r, numOfBuckets, vectorSize);
         index(vectors);
     }
 

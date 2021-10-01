@@ -49,7 +49,7 @@ public class SimpleExp {
             String groundTruthPath = cmd.getOptionValue("gt");
             Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
             System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
-            System.out.println("Exhausted Search: "+ sourceEntities.size()*targetEntities.size());
+            System.out.println("Brute Force Verifications: "+ sourceEntities.size()*targetEntities.size());
             System.out.println("Similarity Join: "+joinAlgorithm.toUpperCase(Locale.ROOT));
             System.out.println();
 

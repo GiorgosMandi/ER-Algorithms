@@ -1,8 +1,6 @@
 package ai.uoa.gr.model;
 
 import com.beust.jcommander.internal.Lists;
-import org.scify.jedai.datamodel.Attribute;
-import org.scify.jedai.datamodel.EntityProfile;
 
 import java.util.*;
 
@@ -12,25 +10,17 @@ public class ShinglingModel {
     StringBuilder sb = new StringBuilder();
     int N;
 
-    public ShinglingModel(List<EntityProfile> entities, int n){
+    public ShinglingModel(List<String> entities, int n){
         this.N = n;
         HashSet<String> uniqueNGrams = new HashSet<>();
-        for (EntityProfile entity: entities){
-            String entityStr = entity2string(entity);
+        for (String entityStr: entities){
             Set<String> entityNGrams = getNGrams(entityStr, this.N);
             uniqueNGrams.addAll(entityNGrams);
         }
         this.ngrams = Lists.newArrayList(uniqueNGrams);
     }
 
-    public String entity2string(EntityProfile entity){
-        sb.setLength(0);
-        for (Attribute attribute : entity.getAttributes()) {
-            sb.append(attribute.getValue().trim());
-            sb.append("-");
-        }
-        return sb.toString();
-    }
+
 
     public Set<String> getNGrams(String str, int n) {
         Set<String> ngrams = new HashSet<>();
@@ -52,8 +42,7 @@ public class ShinglingModel {
         return ngrams;
     }
 
-    public boolean[] getBooleanVector(EntityProfile entity){
-        String entityStr = entity2string(entity);
+    public boolean[] getBooleanVector(String entityStr){
         Set<String> entityNGrams = getNGrams(entityStr, this.N);
         boolean[] vector = new boolean[this.ngrams.size()];
         for (int i=0; i<this.ngrams.size(); i++){
@@ -63,8 +52,7 @@ public class ShinglingModel {
         return vector;
     }
 
-    public int[] getIntegerVector(EntityProfile entity){
-        String entityStr = entity2string(entity);
+    public int[] getIntegerVector(String entityStr){
         Map<String, Integer> entityNGrams = getCountedNGrams(entityStr, this.N);
         int[] vector = new int[this.ngrams.size()];
         for (int i=0; i<this.ngrams.size(); i++){
@@ -74,7 +62,7 @@ public class ShinglingModel {
         return vector;
     }
 
-    public boolean[][] booleanVectorization(List<EntityProfile> entities){
+    public boolean[][] booleanVectorization(List<String> entities){
         boolean[][] vectors = new boolean[entities.size()][this.ngrams.size()];
         for(int i=0; i<entities.size(); i++){
             vectors[i] = getBooleanVector(entities.get(i));
@@ -82,7 +70,7 @@ public class ShinglingModel {
         return vectors;
     }
 
-    public int[][] vectorization(List<EntityProfile> entities){
+    public int[][] vectorization(List<String> entities){
         int[][] vectors = new int[entities.size()][this.ngrams.size()];
         for(int i=0; i<entities.size(); i++){
             vectors[i] = getIntegerVector(entities.get(i));
