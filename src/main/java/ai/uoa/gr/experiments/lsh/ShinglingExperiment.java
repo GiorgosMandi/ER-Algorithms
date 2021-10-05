@@ -8,24 +8,22 @@ import ai.uoa.gr.algorithms.lsh.SuperBit;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
 import org.apache.commons.cli.*;
+import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ShinglingExperiment {
-    static int MIN_BANDS = 3;
-    static int MAX_BANDS = 5;
-    static int STEP_BANDS = 1;
+    static int MIN_BANDS = 100;
+    static int MAX_BANDS = 200;
+    static int STEP_BANDS = 20;
 
-    static int MIN_BUCKETS = 1;
-    static int MAX_BUCKETS = 10;
-    static int STEP_BUCKETS = 1;
+    static int MIN_BUCKETS = 40;
+    static int MAX_BUCKETS = 100;
+    static int STEP_BUCKETS = 20;
 
-    static int MAX_ITER = 10;
+    static int MAX_ITER = 3;
 
 
     public static void main(String[] args) {
@@ -69,13 +67,31 @@ public class ShinglingExperiment {
             String sourcePath = cmd.getOptionValue("s");
             List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
             System.out.println("Source Entities: " + sourceEntities.size());
-            List<String> sourceSTR = Utilities.entities2String(sourceEntities);
+            List<String> sourceSTR;
+            if(sourceEntities.get(0).getAttributes().stream().anyMatch(a -> a.getValue().equals("title"))){
+                sourceSTR = new LinkedList<>();
+                for(EntityProfile e: sourceEntities){
+                    for (Attribute attr: e.getAttributes())
+                        if(Objects.equals(attr.getName(), "title"))
+                            sourceSTR.add(attr.getValue());
+                }
+            }
+            else sourceSTR = Utilities.entities2String(sourceEntities);
 
             // read target entities
             String targetPath = cmd.getOptionValue("t");
             List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
             System.out.println("Target Entities: " + targetEntities.size());
-            List<String> targetSTR = Utilities.entities2String(targetEntities);
+            List<String> targetSTR;
+            if(sourceEntities.get(0).getAttributes().stream().anyMatch(a -> a.getValue().equals("title"))){
+                targetSTR = new LinkedList<>();
+                for(EntityProfile e: targetEntities){
+                    for (Attribute attr: e.getAttributes())
+                        if(Objects.equals(attr.getName(), "title"))
+                            targetSTR.add(attr.getValue());
+                }
+            }
+            else targetSTR = Utilities.entities2String(targetEntities);
 
             // read ground-truth file
             String groundTruthPath = cmd.getOptionValue("gt");

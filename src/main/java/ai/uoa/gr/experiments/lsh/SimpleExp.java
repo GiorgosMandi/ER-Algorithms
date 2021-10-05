@@ -8,13 +8,11 @@ import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
 import org.apache.commons.cli.*;
+import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author George Mandilaras (NKUA)
@@ -57,13 +55,31 @@ public class SimpleExp {
             String sourcePath = cmd.getOptionValue("s");
             List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
             System.out.println("Source Entities: " + sourceEntities.size());
-            List<String> sourceSTR = Utilities.entities2String(sourceEntities);
+            List<String> sourceSTR;
+            if(sourceEntities.get(0).getAttributes().stream().filter(a -> a.getValue().equals("title")).count() > 0){
+                sourceSTR = new LinkedList<>();
+                for(EntityProfile e: sourceEntities){
+                    for (Attribute attr: e.getAttributes())
+                        if(Objects.equals(attr.getName(), "title"))
+                            sourceSTR.add(attr.getValue());
+                }
+            }
+            else sourceSTR = Utilities.entities2String(sourceEntities);
 
             // read target entities
             String targetPath = cmd.getOptionValue("t");
             List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
             System.out.println("Target Entities: " + targetEntities.size());
-            List<String> targetSTR = Utilities.entities2String(targetEntities);
+            List<String> targetSTR;
+            if(sourceEntities.get(0).getAttributes().stream().filter(a -> a.getValue().equals("title")).count() > 0){
+                targetSTR = new LinkedList<>();
+                for(EntityProfile e: targetEntities){
+                    for (Attribute attr: e.getAttributes())
+                        if(Objects.equals(attr.getName(), "title"))
+                            targetSTR.add(attr.getValue());
+                }
+            }
+            else targetSTR = Utilities.entities2String(targetEntities);
 
             // read ground-truth file
             String groundTruthPath = cmd.getOptionValue("gt");

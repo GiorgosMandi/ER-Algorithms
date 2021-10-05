@@ -11,17 +11,20 @@ import java.util.stream.IntStream;
  * @author George Mandilaras (NKUA)
  */
 
-public class AllPairs {
-    // Jaccard Similarity Threshold
-    float Tj;
-    List<String> source;
+public class AllPairs extends SimilarityJoinA {
+
     Map<Character, Integer> frequenciesMap;
-    // Char -> (index in source, index of char in string based on the order of its frequencies)
+
+    // Char -> (index in source, index of char based on the order of its frequencies)
     Map<Character, List<Pair<Integer, Integer>>> prefixInvertedIndex;
 
     public AllPairs(List<String> source, float t) {
-        this.Tj = t;
-        this.source = source;
+        super(source, t);
+        index(source);
+    }
+
+    @Override
+    public void index(List<String> source){
         this.frequenciesMap = buildFrequenciesMap(source);
         this.prefixInvertedIndex = buildPrefixInvertedIndex(source);
     }
@@ -68,13 +71,13 @@ public class AllPairs {
     }
 
     /**
-     * Given a String find its prefix
+     * Given a String find its prefix accompanied of its indices
      *      Compute it by using a TreeSet of Pairs containing chars and their frequencies.
      *      The inequality of the pairs is defined by their values but the equality by their keys.
      *      Only different pairs (i.e., different keys) are added to the TreeSet.
      * @param s a string
      * @param tj a Jaccard threshold used to compute the size of the prefix
-     * @return  string's prefix
+     * @return  string's prefix accompanied of its indices
      */
     public List<Pair<Character, Integer>> getPrefix(String s, float tj) {
         int prefixSize = getPrefixSize(s, tj);
@@ -122,12 +125,12 @@ public class AllPairs {
      * @param t a target string
      * @return a list of candidates' indices
      */
+    @Override
     public Set<Integer> query(String t){
         Set<Integer> candidates = new HashSet<>();
         List<Pair<Character, Integer>> prefix = getPrefix(t, this.Tj);
         for (Pair<Character, Integer> p: prefix){
             char prefixChar = p.getValue0();
-            int prefixCharIndex = p.getValue1();
             List<Integer> preCandidates = this.prefixInvertedIndex
                     .getOrDefault(prefixChar, Collections.emptyList())
                     .stream()

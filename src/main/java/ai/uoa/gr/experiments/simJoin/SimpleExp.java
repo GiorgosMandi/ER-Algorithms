@@ -2,6 +2,7 @@ package ai.uoa.gr.experiments.simJoin;
 
 import ai.uoa.gr.algorithms.similarityjoin.tokenbased.AllPairs;
 import ai.uoa.gr.algorithms.similarityjoin.tokenbased.PPJoin;
+import ai.uoa.gr.algorithms.similarityjoin.tokenbased.SimilarityJoinA;
 import ai.uoa.gr.performance.SimJoinPerformance;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
@@ -59,7 +60,7 @@ public class SimpleExp {
             long verifications = 0;
             long time = Calendar.getInstance().getTimeInMillis();
 
-            AllPairs similarityJoin;
+            SimilarityJoinA similarityJoin;
             if (joinAlgorithm.toLowerCase(Locale.ROOT).equals("ppjoin"))
                 similarityJoin = new PPJoin(sourceSTR, tj);
             else

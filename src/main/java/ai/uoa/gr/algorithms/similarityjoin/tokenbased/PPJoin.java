@@ -17,7 +17,6 @@ public class PPJoin extends AllPairs{
         super(source, t);
     }
 
-
     /**
      *  For a target entity, get its candidates.
      *      Find its prefix and use it to query the Prefix Inverted Index.
@@ -25,6 +24,7 @@ public class PPJoin extends AllPairs{
      * @param t a target string
      * @return a list of candidates' indices
      */
+    @Override
     public Set<Integer> query(String t){
         // in A[s] will accumulate the amount of overlaps that occur in the prefixes of (s, t)
         Map<Integer, Integer> A = new HashMap<>();
