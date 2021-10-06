@@ -31,7 +31,7 @@ public class PartEnum extends SimilarityJoinA   {
         vectorI = new ArrayList<>();
         int l=1, r=1;
         vectorI.add(new Category(l, r, tj, vectorSize));
-        while (l < model.getVectorSize()){
+        while (l < vectorSize){
             l = r+1;
             r = (int) floor(l/tj);
             vectorI.add(new Category(l, r, tj, vectorSize));
@@ -54,11 +54,17 @@ public class PartEnum extends SimilarityJoinA   {
         System.out.println("Source Entities: " + sourceEntities.size());
         List<String> sourceSTR = Utilities.entities2String(sourceEntities);
 
-        PartEnum simJoin = new PartEnum(sourceSTR, 0.75f, 1);
+        PartEnum simJoin = new PartEnum(sourceSTR, 0.7f, 1);
+
+        List<List<Boolean>> hashes = new ArrayList<>();
         for (String str: sourceSTR) {
+            boolean[] vector = simJoin.model.getBooleanVector(str);
+            int vectorSize = simJoin.model.computeLength(vector);
+
             for (Category c: simJoin.vectorI){
-                if (str.length() > c.l && str.length() < c.r ) {
-                    List<Boolean> hash = c.sign(simJoin.model.getBooleanVector(str));
+                if (vectorSize > c.l && vectorSize < c.r ) {
+                    List<Boolean> hash = c.sign(vector);
+                    hashes.add(hash);
                     System.out.println();
                 }
             }

@@ -119,4 +119,13 @@ public class ShinglingModel {
     public void shuffle(){
         Collections.shuffle(ngramsVector);
     }
+
+
+    public int computeLength(boolean[] vector){
+        int length = 0;
+        for(int i=0; i<vector.length; i++)
+            if (vector[i])
+                length++;
+        return length;
+    }
 }
