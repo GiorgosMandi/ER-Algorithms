@@ -15,14 +15,13 @@ import org.scify.jedai.datamodel.IdDuplicates;
 import java.util.*;
 
 public class ShinglingExperiment {
-    static int MIN_BANDS = 100;
-    static int MAX_BANDS = 200;
-    static int STEP_BANDS = 20;
+    static int MIN_BANDS = 15;
+    static int MAX_BANDS = 50;
+    static int STEP_BANDS = 5;
 
-    static int MIN_BUCKETS = 40;
-    static int MAX_BUCKETS = 100;
-    static int STEP_BUCKETS = 20;
-
+    static int MIN_BUCKETS = 20;
+    static int MAX_BUCKETS = 50;
+    static int STEP_BUCKETS = 5;
     static int MAX_ITER = 3;
 
 
