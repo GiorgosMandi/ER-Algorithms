@@ -4,7 +4,6 @@ import ai.uoa.gr.algorithms.similarityjoin.tokenbased.SimilarityJoinA;
 import ai.uoa.gr.model.ShinglingModel;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.scify.jedai.datamodel.EntityProfile;
 
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ public class PartEnum extends SimilarityJoinA   {
     List<Category> vectorI;
     int vectorSize;
 
-    public PartEnum(List<String> source, float tj, int n) throws InvalidArgumentException {
+    public PartEnum(List<String> source, float tj, int n)  {
         super(source, tj);
         model = new ShinglingModel(source, n);
         model.shuffle();
@@ -48,7 +47,7 @@ public class PartEnum extends SimilarityJoinA   {
 
     }
 
-    public static void main(String[] args) throws InvalidArgumentException {
+    public static void main(String[] args) throws IllegalArgumentException {
         String sourcePath = "/home/gmandi/Documents/Extreme_Earth/Entity_Resolution/Data/jedai-Serialized/cleanCleanErDatasets/restaurant1Profiles";
         List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
         System.out.println("Source Entities: " + sourceEntities.size());

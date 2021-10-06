@@ -97,7 +97,7 @@ public class AllPairs extends SimilarityJoinA {
 
     /**
      *  Given a String and a Jaccard threshold get the size of its prefix.
-     *      πr = |r| - ceil(tj * |r|) + 1
+     *      pr = |r| - ceil(tj * |r|) + 1
      * @param s a string
      * @param tj a Jaccard threshold
      * @return the size of its prefix

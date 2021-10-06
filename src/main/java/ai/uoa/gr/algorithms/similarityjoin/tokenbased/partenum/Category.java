@@ -2,7 +2,6 @@ package ai.uoa.gr.algorithms.similarityjoin.tokenbased.partenum;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import gnu.trove.list.TIntList;
 
 import java.util.*;
@@ -49,7 +48,7 @@ public class Category {
     public HashMap<Integer, TIntList>[] sig_map;
 
 
-    public Category(int l, int r, float tj, int vectorSize) throws InvalidArgumentException {
+    public Category(int l, int r, float tj, int vectorSize) throws IllegalArgumentException {
         this.r = r;
         this.l = l;
         this.N = vectorSize;
@@ -70,7 +69,7 @@ public class Category {
         if (N1 > K + 1 || N1 * N2 <= K + 1) {
             String error1 = String.format("Invalid Arguments K:%d, N1:%d, N2:%d", K, N1, N2);
             String error2 = "Input arguments must comply to `N1 > K + 1 || N1 * N2 <= K + 1`";
-            throw new InvalidArgumentException(new String[]{error1, error2});
+            throw new IllegalArgumentException(error1 + " " + error2);
         }
 
         // TODO this must be a random permutation
