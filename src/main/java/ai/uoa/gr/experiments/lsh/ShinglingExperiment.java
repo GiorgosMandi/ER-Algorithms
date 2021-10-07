@@ -1,18 +1,20 @@
 package ai.uoa.gr.experiments.lsh;
 
-import ai.uoa.gr.performance.LshPerformance;
-import ai.uoa.gr.model.ShinglingModel;
 import ai.uoa.gr.algorithms.lsh.LocalitySensitiveHashing;
 import ai.uoa.gr.algorithms.lsh.MinHash;
 import ai.uoa.gr.algorithms.lsh.SuperBit;
+import ai.uoa.gr.model.ShinglingModel;
+import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
 import org.apache.commons.cli.*;
-import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Set;
 
 public class ShinglingExperiment {
     static int MIN_BANDS = 15;
@@ -33,6 +35,9 @@ public class ShinglingExperiment {
             options.addRequiredOption("s", "source", true, "path to the source dataset");
             options.addRequiredOption("t", "target",true, "path to the target dataset");
             options.addRequiredOption("gt", "groundTruth", true, "path to the Ground Truth dataset");
+
+            options.addOption("sourceField", true, "Use specific field of source");
+            options.addOption("targetField", true, "Use specific field of target");
 
             // band-related arguments
             // band defines the number of rows per band
@@ -66,31 +71,21 @@ public class ShinglingExperiment {
             String sourcePath = cmd.getOptionValue("s");
             List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
             System.out.println("Source Entities: " + sourceEntities.size());
-            List<String> sourceSTR;
-            if(sourceEntities.get(0).getAttributes().stream().anyMatch(a -> a.getValue().equals("title"))){
-                sourceSTR = new LinkedList<>();
-                for(EntityProfile e: sourceEntities){
-                    for (Attribute attr: e.getAttributes())
-                        if(Objects.equals(attr.getName(), "title"))
-                            sourceSTR.add(attr.getValue());
-                }
+            String sField = null;
+            if (cmd.hasOption("sourceField")){
+                sField = cmd.getOptionValue("sourceField");
             }
-            else sourceSTR = Utilities.entities2String(sourceEntities);
+            List<String> sourceSTR = Utilities.entities2String(sourceEntities, sField);
 
             // read target entities
             String targetPath = cmd.getOptionValue("t");
             List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
             System.out.println("Target Entities: " + targetEntities.size());
-            List<String> targetSTR;
-            if(sourceEntities.get(0).getAttributes().stream().anyMatch(a -> a.getValue().equals("title"))){
-                targetSTR = new LinkedList<>();
-                for(EntityProfile e: targetEntities){
-                    for (Attribute attr: e.getAttributes())
-                        if(Objects.equals(attr.getName(), "title"))
-                            targetSTR.add(attr.getValue());
-                }
+            String tField = null;
+            if (cmd.hasOption("targetField")){
+                tField = cmd.getOptionValue("targetField");
             }
-            else targetSTR = Utilities.entities2String(targetEntities);
+            List<String> targetSTR = Utilities.entities2String(targetEntities, tField);
 
             // read ground-truth file
             String groundTruthPath = cmd.getOptionValue("gt");
@@ -119,7 +114,6 @@ public class ShinglingExperiment {
             System.out.format("Bands: [%d, %d] with step %d\n", MIN_BANDS, MAX_BANDS, STEP_BANDS);
             System.out.format("Buckets: [%d, %d] with step %d\n", MIN_BUCKETS, MAX_BUCKETS, STEP_BUCKETS);
             System.out.println("Grid Search Starts\n");
-
 
             LshPerformance perf = new LshPerformance();
             for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
