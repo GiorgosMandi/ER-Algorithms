@@ -24,7 +24,7 @@ public class ShinglingExperiment {
     static int MIN_BUCKETS = 20;
     static int MAX_BUCKETS = 50;
     static int STEP_BUCKETS = 5;
-    static int MAX_ITER = 3;
+    static int MAX_ITER = 10;
 
 
     public static void main(String[] args) {
