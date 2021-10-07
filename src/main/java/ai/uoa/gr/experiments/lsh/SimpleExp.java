@@ -78,7 +78,9 @@ public class SimpleExp {
             String groundTruthPath = cmd.getOptionValue("gt");
             Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
             System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
-            System.out.println("Cartesian: " + sourceEntities.size()*targetEntities.size());
+
+            double cartesian = sourceEntities.size()*targetEntities.size();
+            System.out.println("Cartesian: " + cartesian);
 
             System.out.println();
 
@@ -146,6 +148,7 @@ public class SimpleExp {
 
             perf.conditionalUpdate(recall, precision, f1, bands, buckets, verifications, tp, time);
             perf.print();
+            System.out.println("Reduction: " + (1- ((float) verifications/cartesian)));
 
         } catch (ParseException e) {
             e.printStackTrace();
