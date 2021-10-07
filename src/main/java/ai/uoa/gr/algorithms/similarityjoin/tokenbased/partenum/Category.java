@@ -8,8 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.lang.Math.ceil;
-import static java.lang.Math.floor;
+import static java.lang.Math.*;
 
 /**
  * @author George Mandilaras (NKUA)
@@ -37,8 +36,10 @@ public class Category {
     // K2 is a fixed number derived from K - (N2-K2) is the size of the second level partitions
     int K, K2;
 
-
-    public List<List<Indices>> partitions;
+    // List -> N1 partitions
+    // List -> N2 partitions for each N1 partition
+    // List -> the enumerations of N2 partition of size (N2-K2)
+    public List<List<List<Indices>>> partitions;
     public long totalSignatures;
 
     public int[][] partitionRangeStarts;
@@ -83,13 +84,14 @@ public class Category {
         Set<Set<Integer>> enumerationsOrder = getEnumerationOrder(IntStream.range(0, N2).boxed().collect(Collectors.toList()),  N2-K2);
 
         // create the first level partition projection. It will create at least N1 partitions
-        List<Indices> firstLeveLPartitions = partition(indicesVector, N1);
+        // TODO change
+        List<Indices> firstLeveLPartitions = partition2(indicesVector, N1);
 
         // for each 1st level partition apply enumeration
         // each partition is partitioned into N2 partitions, which are then enumerated based on the enumeration order
         for (List<Integer> firstLeveLPartition:  firstLeveLPartitions){
             List<List<Indices>> enumeratedPartitions = enumerate(firstLeveLPartition, N2, enumerationsOrder);
-            partitions.addAll(enumeratedPartitions);
+            partitions.add(enumeratedPartitions);
         }
         totalSignatures = N1 * nCr(N2,K2);
 
@@ -137,7 +139,7 @@ public class Category {
             return newPartitions;
         }
         else {
-            int size = (int) Math.floor((float) vectorSize / (float) partitionsNumber);
+            int size = (int) Math.ceil((float) vectorSize / (float) partitionsNumber);
             Iterables.partition(list, size).forEach(e -> newPartitions.add(new Indices(e)));
             if (newPartitions.size() < partitionsNumber) {
                 // when rest == 0 it inserts an empty list
@@ -148,9 +150,26 @@ public class Category {
         }
     }
 
+    // TODO fix this method to replace the other partition
+    public List<Indices> partition2(List<Integer> list, int partitionsNumber){
+        List<Indices> newPartitions = new LinkedList<>();
+        int vectorSize = list.size();
+        float indicesPerPartition = (float) vectorSize / (float) partitionsNumber;
+        for(float f=0f; ceil(f)<vectorSize; f+=indicesPerPartition){
+            int start = (int) ceil(f);
+            start = max(0, start);
+            int  end = (int) ceil(f+indicesPerPartition);
+            end = Math.min(end, vectorSize);
+            Indices indices = new Indices(list.subList(start, end));
+            newPartitions.add(indices);
+        }
+        return newPartitions;
+    }
+
     public List<List<Indices>> enumerate(List<Integer> vector, int totalPartitions, Set<Set<Integer>> enumerationsOrder){
         List<List<Indices>> enumeratedPartitions = new ArrayList<>();
-        List<Indices> secondLeveLPartitions = partition(vector, totalPartitions);
+        // TODO change
+        List<Indices> secondLeveLPartitions = partition2(vector, totalPartitions);
         for(Set<Integer> enumeration: enumerationsOrder){
             List<Indices> enumeratedPartition = new LinkedList<>();
             enumeration.forEach(e -> enumeratedPartition.add(secondLeveLPartitions.get(e)));
