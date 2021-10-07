@@ -10,7 +10,7 @@ public class MinHash extends LocalitySensitiveHashing {
         this.vectorSize = vectorSize;
         this.bands = bands;
         this.numOfBuckets = buckets;
-        r = vectorSize/bands;
+        this.r = vectorSize/bands;
         this.lsh = new LSHMinHash(this.bands, this.numOfBuckets, this.vectorSize);
 
         index(vectors);

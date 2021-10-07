@@ -128,7 +128,7 @@ public class SimpleExp {
                     Set<String> sourceNGrams = model.getNGrams(sourceStr, n);
                     Set<String> targetNGrams = model.getNGrams(targetStr, n);
                     Set<String> intersection = new HashSet<>(sourceNGrams);
-                    intersection.removeAll(targetNGrams);
+                    intersection.retainAll(targetNGrams);
                     if (intersection.isEmpty()){
                         System.out.println("No intersection between: " + c + " and " + j);
                     }
