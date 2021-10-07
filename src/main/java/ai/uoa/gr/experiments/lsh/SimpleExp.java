@@ -8,7 +8,6 @@ import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
 import org.apache.commons.cli.*;
-import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
 
@@ -31,6 +30,9 @@ public class SimpleExp {
             options.addOption("bands", true, "number of band");
             options.addOption("buckets", true, "minimum value of Buckets");
             options.addOption("ngrams", true, "size of ngrams");
+
+            options.addOption("sourceField", true, "Use specific field of source");
+            options.addOption("targetField", true, "Use specific field of target");
 
             // SuperBit argument
             options.addOption("superBit", false, "if specified use SuperBit, otherwise use MinHash");
@@ -55,36 +57,29 @@ public class SimpleExp {
             String sourcePath = cmd.getOptionValue("s");
             List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
             System.out.println("Source Entities: " + sourceEntities.size());
-            List<String> sourceSTR;
-            if(sourceEntities.get(0).getAttributes().stream().filter(a -> a.getValue().equals("title")).count() > 0){
-                sourceSTR = new LinkedList<>();
-                for(EntityProfile e: sourceEntities){
-                    for (Attribute attr: e.getAttributes())
-                        if(Objects.equals(attr.getName(), "title"))
-                            sourceSTR.add(attr.getValue());
-                }
+            String sField = null;
+            if (cmd.hasOption("sourceField")){
+                sField = cmd.getOptionValue("sourceField");
             }
-            else sourceSTR = Utilities.entities2String(sourceEntities);
+            List<String> sourceSTR = Utilities.entities2String(sourceEntities, sField);
+
 
             // read target entities
             String targetPath = cmd.getOptionValue("t");
             List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
             System.out.println("Target Entities: " + targetEntities.size());
-            List<String> targetSTR;
-            if(sourceEntities.get(0).getAttributes().stream().filter(a -> a.getValue().equals("title")).count() > 0){
-                targetSTR = new LinkedList<>();
-                for(EntityProfile e: targetEntities){
-                    for (Attribute attr: e.getAttributes())
-                        if(Objects.equals(attr.getName(), "title"))
-                            targetSTR.add(attr.getValue());
-                }
+            String tField = null;
+            if (cmd.hasOption("targetField")){
+                tField = cmd.getOptionValue("targetField");
             }
-            else targetSTR = Utilities.entities2String(targetEntities);
+            List<String> targetSTR = Utilities.entities2String(targetEntities, tField);
 
             // read ground-truth file
             String groundTruthPath = cmd.getOptionValue("gt");
             Set<IdDuplicates> gtDuplicates = Reader.readSerializedGT(groundTruthPath, sourceEntities, targetEntities);
             System.out.println("GT Duplicates Entities: " + gtDuplicates.size());
+            System.out.println("Cartesian: " + sourceEntities.size()*targetEntities.size());
+
             System.out.println();
 
             // create models
@@ -123,6 +118,19 @@ public class SimpleExp {
                 double[] vector = tVectors[j];
                 Set<Integer> candidates = lsh.query(vector);
                 for (Integer c : candidates) {
+
+                    // TODO check if candidate has common n-grams
+                    String sourceStr = sourceSTR.get(c);
+                    String targetStr = targetSTR.get(j);
+
+                    Set<String> sourceNGrams = model.getNGrams(sourceStr, n);
+                    Set<String> targetNGrams = model.getNGrams(targetStr, n);
+                    Set<String> intersection = new HashSet<>(sourceNGrams);
+                    intersection.removeAll(targetNGrams);
+                    if (intersection.isEmpty()){
+                        System.out.println("No intersection between: " + c + " and " + j);
+                    }
+
                     IdDuplicates pair = new IdDuplicates(c, j);
                     if (gtDuplicates.contains(pair)) tp += 1;
                     verifications += 1;
