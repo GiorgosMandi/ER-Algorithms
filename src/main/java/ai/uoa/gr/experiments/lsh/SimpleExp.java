@@ -46,7 +46,7 @@ public class SimpleExp {
             if (useSuperBit) System.out.println("Using LSH SuperBit");
             else System.out.println("Using LSH MinHash");
 
-            int n = Integer.parseInt(cmd.getOptionValue("ngrams", "2"));
+            int n = Integer.parseInt(cmd.getOptionValue("ngrams", "1"));
             int bands = Integer.parseInt(cmd.getOptionValue("bands", "9"));
             int buckets = Integer.parseInt(cmd.getOptionValue("buckets", "25"));
             System.out.println("N: "+n);
@@ -87,18 +87,34 @@ public class SimpleExp {
             // create models
             System.out.println("Starts Vectorization");
             ShinglingModel model = new ShinglingModel(sourceSTR, n);
+//            int[][] sourceVectorsInt = model.vectorization(sourceSTR);
+//            double[][] sVectors = new double[sourceVectorsInt.length][];
+//            for (int row = 0; row < sourceVectorsInt.length; row++) {
+//                sVectors[row] = Arrays.stream(sourceVectorsInt[row]).asDoubleStream().toArray();
+//            }
+//
+//            int[][] targetVectorsInt = model.vectorization(targetSTR);
+//            double[][] tVectors = new double[targetVectorsInt.length][];
+//            for (int row = 0; row < targetVectorsInt.length; row++) {
+//                tVectors[row] = Arrays.stream(targetVectorsInt[row]).asDoubleStream().toArray();
+//            }
+//            System.out.println("Vectorization Completed\nVector Size:\t"+ model.getVectorSize());
+
+
+            // TODO REMOVE
+            int MAX_SOURCE=10000;
             int[][] sourceVectorsInt = model.vectorization(sourceSTR);
-            double[][] sVectors = new double[sourceVectorsInt.length][];
-            for (int row = 0; row < sourceVectorsInt.length; row++) {
+            double[][] sVectors = new double[MAX_SOURCE][];
+            for (int row = 0; row < MAX_SOURCE; row++) {
                 sVectors[row] = Arrays.stream(sourceVectorsInt[row]).asDoubleStream().toArray();
             }
-
+            int MAX_TARGET=2000;
             int[][] targetVectorsInt = model.vectorization(targetSTR);
-            double[][] tVectors = new double[targetVectorsInt.length][];
-            for (int row = 0; row < targetVectorsInt.length; row++) {
+            double[][] tVectors = new double[MAX_TARGET][];
+            for (int row = 0; row <MAX_TARGET ; row++) {
                 tVectors[row] = Arrays.stream(targetVectorsInt[row]).asDoubleStream().toArray();
             }
-            System.out.println("Vectorization Completed\nVector Size:\t"+ model.getVectorSize());
+
 
             long time = Calendar.getInstance().getTimeInMillis();
             // initialize LSH
@@ -107,6 +123,48 @@ public class SimpleExp {
                 lsh = new SuperBit(sVectors, bands, buckets, model.getVectorSize());
             else
                 lsh = new MinHash(sVectors, bands, buckets, model.getVectorSize());
+
+
+            // TODO REMOVE
+            int id1 = 8423;
+            int id2 = 9;
+            String entity1 = sourceSTR.get(id1);
+            String entity2 = targetSTR.get(id2);
+            double[] vector1 = sVectors[id1];
+            double[] vector2 = tVectors[id2];
+            Set<String> ngrams1 = model.getNGrams(entity1, n);
+            Set<String> ngrams2 = model.getNGrams(entity2, n);
+            Set<String> intersection12 = new HashSet<>(ngrams1);
+            intersection12.retainAll(ngrams2);
+            int[] bucket1 = lsh.hash(sVectors[id1]);
+            int[] bucket2 = lsh.hash(tVectors[id2]);
+            List<Integer> commonBands = new LinkedList<>();
+            for (int i=0; i<bands;i++){
+                if (bucket1[i] == bucket2[i])
+                    commonBands.add(i);
+            }
+
+            int rows = vector1.length/bands;
+            for (int i: commonBands){
+                List<Integer> subVector1 = new LinkedList<>();
+                List<Integer> subVector2 = new LinkedList<>();
+                List<Integer> ones1 = new LinkedList<>();
+                List<Integer> ones2 = new LinkedList<>();
+                int start = rows*i;
+                int end = rows*(i+1);
+               for (int j=start;j<end;j++){
+                   if (vector1[j] == 1)
+                       ones1.add(j);
+                   if (vector2[j] == 1)
+                       ones2.add(j);
+                   subVector1.add((int)vector1[j]);
+                   subVector2.add((int)vector2[j]);
+               }
+                System.out.println();
+
+            }
+            System.out.println();
+
 
             // true positive
             long tp = 0;
