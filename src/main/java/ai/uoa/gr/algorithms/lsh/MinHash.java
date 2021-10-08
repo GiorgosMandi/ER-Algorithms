@@ -2,7 +2,7 @@ package ai.uoa.gr.algorithms.lsh;
 
 import info.debatty.java.lsh.LSHMinHash;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class MinHash extends LocalitySensitiveHashing {
 
@@ -11,8 +11,7 @@ public class MinHash extends LocalitySensitiveHashing {
         this.bands = bands;
         this.numOfBuckets = buckets;
         this.r = vectorSize/bands;
-        this.lsh = new LSHMinHash(this.bands, this.numOfBuckets, this.vectorSize);
-
+        this.lsh = new LSHMinHash(this.bands, this.numOfBuckets, this.vectorSize, Calendar.getInstance().getTimeInMillis());
         index(vectors);
     }
 
@@ -22,7 +21,14 @@ public class MinHash extends LocalitySensitiveHashing {
      * @return the indices of buckets
      */
     public int[] hash(double[] vector){
-        int[] integers = Arrays.stream(vector).mapToInt(i -> (int)i).toArray();
-        return lsh.hashSignature(integers);
+        boolean[] boolArray = toBooleanVector(vector);
+        return ((LSHMinHash) lsh).hash(boolArray);
+    }
+
+    public boolean[] toBooleanVector(double[] vector){
+        boolean[] boolArray = new boolean[vector.length];
+        for (int i=0; i<vector.length;i++)
+            boolArray[i] = vector[i] > 0;
+        return boolArray;
     }
 }
