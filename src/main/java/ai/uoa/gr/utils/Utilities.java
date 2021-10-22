@@ -38,7 +38,7 @@ public class Utilities {
             for(EntityProfile e: entities){
                 for (Attribute attr: e.getAttributes())
                     if(Objects.equals(attr.getName(), field))
-                        strEntities.add(attr.getValue());
+                        strEntities.add(attr.getValue().toLowerCase(Locale.ROOT).trim());
             }
             return strEntities;
         }
