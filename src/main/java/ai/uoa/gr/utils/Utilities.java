@@ -3,10 +3,7 @@ package ai.uoa.gr.utils;
 import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -17,8 +14,11 @@ public class Utilities {
     public static String entity2String(EntityProfile e, StringBuilder sb){
         sb.setLength(0);
         for(Attribute attr: e.getAttributes()){
-            sb.append(attr.getValue());
-            sb.append("-");
+            String value = attr.getValue().toLowerCase(Locale.ROOT).trim();
+            if (!value.equals("")){
+                sb.append(value);
+                sb.append("-");
+            }
         }
         return sb.toString();
     }
