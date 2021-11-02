@@ -40,15 +40,17 @@ public abstract class LocalitySensitiveHashing {
     public void index(double[][] vectors){
         this.buckets = (HashSet<Integer>[][]) new HashSet[this.bands][this.numOfBuckets];
         for (int i=0; i<vectors.length; i++){
-            int[] hashes = hash(vectors[i]);
-            for (int b=0; b<hashes.length; b++){
-                int hash = hashes[b];
-                if (buckets[b][hash] == null) {
-                    HashSet<Integer> bucketEntities = new HashSet<>();
-                    buckets[b][hash] = bucketEntities;
+            if (nonEmpty(vectors[i])) {
+                int[] hashes = hash(vectors[i]);
+                for (int b = 0; b < hashes.length; b++) {
+                    int hash = hashes[b];
+                    if (buckets[b][hash] == null) {
+                        HashSet<Integer> bucketEntities = new HashSet<>();
+                        buckets[b][hash] = bucketEntities;
+                    }
+                    Set<Integer> bucketEntities = buckets[b][hash];
+                    bucketEntities.add(i);
                 }
-                Set<Integer> bucketEntities = buckets[b][hash];
-                bucketEntities.add(i);
             }
         }
     }
@@ -61,12 +63,22 @@ public abstract class LocalitySensitiveHashing {
      */
     public Set<Integer> query(double[] vector){
         Set<Integer> candidates = new HashSet<>();
-        int[] hashes = hash(vector);
-        for (int b=0; b<hashes.length; b++){
-            int hash = hashes[b];
-            if(buckets[b][hash] != null)
-                candidates.addAll(buckets[b][hash]);
+        if (nonEmpty(vector)) {
+            int[] hashes = hash(vector);
+            for (int b = 0; b < hashes.length; b++) {
+                int hash = hashes[b];
+                if (buckets[b][hash] != null)
+                    candidates.addAll(buckets[b][hash]);
+            }
         }
         return candidates;
+    }
+
+    private boolean nonEmpty(double[] vector){
+        for (int i=0; i<vectorSize; i++){
+            if (vector[i] > 0)
+                return true;
+        }
+        return false;
     }
 }
