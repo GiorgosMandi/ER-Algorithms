@@ -36,9 +36,14 @@ public class Utilities {
         else{
             List<String> strEntities = new ArrayList<>();
             for(EntityProfile e: entities){
-                for (Attribute attr: e.getAttributes())
-                    if(Objects.equals(attr.getName(), field))
-                        strEntities.add(attr.getValue().toLowerCase(Locale.ROOT).trim());
+                String value = "";
+                for (Attribute attr: e.getAttributes()) {
+                    if (Objects.equals(attr.getName(), field)) {
+                        value = attr.getValue().toLowerCase(Locale.ROOT).trim();
+                        break;
+                    }
+                }
+                strEntities.add(value);
             }
             return strEntities;
         }
