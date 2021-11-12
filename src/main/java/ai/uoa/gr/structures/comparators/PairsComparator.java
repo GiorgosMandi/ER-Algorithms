@@ -1,4 +1,4 @@
-package ai.uoa.gr.utils;
+package ai.uoa.gr.structures.comparators;
 
 import org.javatuples.Pair;
 

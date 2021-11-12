@@ -8,24 +8,31 @@ import ai.uoa.gr.performance.LshPerformance;
 import ai.uoa.gr.utils.Reader;
 import ai.uoa.gr.utils.Utilities;
 import org.apache.commons.cli.*;
+import org.scify.jedai.datamodel.Attribute;
 import org.scify.jedai.datamodel.EntityProfile;
 import org.scify.jedai.datamodel.IdDuplicates;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShinglingExperiment {
-    static int MIN_BANDS = 15;
-    static int MAX_BANDS = 50;
+    static int MIN_BANDS = 64;
+    static int MAX_BANDS = 100;
     static int STEP_BANDS = 5;
 
-    static int MIN_BUCKETS = 20;
+    static int MIN_BUCKETS = 2;
     static int MAX_BUCKETS = 50;
     static int STEP_BUCKETS = 5;
-    static int MAX_ITER = 10;
+    static int MAX_ITER = 2; // TODO
+    static int N = 1;
 
+
+    private final static int[] BANDS = {64, 32, 16, 8, 4, 2, 128, 64, 32, 16, 8, 4, 2, 256, 128, 64, 32, 16, 8, 4, 2};
+    private final static int[] BUCKETS = {8, 2, 4, 8, 16, 32, 64, 2, 4, 8, 16, 32, 64, 128, 2, 4, 8, 16, 32, 64, 128, 256};
+
+    static int MIN_N_GRAM = 2;
+    static int MAX_N_GRAM = 5;
+    static int STEP_N_GRAM = 1;
 
     public static void main(String[] args) {
         try {
@@ -64,7 +71,7 @@ public class ShinglingExperiment {
             if (useSuperBit) System.out.println("Using LSH SuperBit");
             else System.out.println("Using LSH MinHash");
 
-            int n = Integer.parseInt(cmd.getOptionValue("ngrams", "2"));
+            int n = Integer.parseInt(cmd.getOptionValue("ngrams", ""+N));
             System.out.println("Using Shingling with N: "+n);
 
             // read source entities
@@ -116,67 +123,71 @@ public class ShinglingExperiment {
             System.out.println("Grid Search Starts\n");
 
             LshPerformance perf = new LshPerformance();
-            for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
-                for (int bands=MIN_BANDS; bands<= MAX_BANDS; bands+= STEP_BANDS){
-                    float recall = 0f;
-                    float precision = 0f;
-                    float f1 = 0f;
-                    long verifications = 0;
-                    long tp = 0;
-                    long time = 0;
-                    System.out.println("#Bands: "+bands);
-                    System.out.println("#Buckets: "+buckets);
-                    for (int iter=0; iter<MAX_ITER; iter++) {
-                        long time_ = Calendar.getInstance().getTimeInMillis();
-                        // initialize LSH
-                        LocalitySensitiveHashing lsh;
-                        if (useSuperBit)
-                            lsh = new SuperBit(sVectors, bands, buckets, model.getVectorSize());
-                        else
-                            lsh = new MinHash(sVectors, bands, buckets, model.getVectorSize());
+//            for (int buckets=MIN_BUCKETS; buckets<=MAX_BUCKETS; buckets+=STEP_BUCKETS){
+//                for (int bands=MIN_BANDS; bands<= MAX_BANDS; bands+= STEP_BANDS){
+            for (int configurationId = 0; configurationId < BANDS.length; configurationId++) {
+                int bands = BANDS[configurationId];
+                int buckets = BUCKETS[configurationId];
 
-                        // true positive
-                        long tp_ = 0;
+                float recall = 0f;
+                float precision = 0f;
+                float f1 = 0f;
+                long verifications = 0;
+                long tp = 0;
+                long time = 0;
+                System.out.println("#Bands: "+bands);
+                System.out.println("#Buckets: "+buckets);
+                for (int iter=0; iter<MAX_ITER; iter++) {
+                    long time_ = Calendar.getInstance().getTimeInMillis();
+                    // initialize LSH
+                    LocalitySensitiveHashing lsh;
+                    if (useSuperBit)
+                        lsh = new SuperBit(sVectors, bands, buckets, model.getVectorSize());
+                    else
+                        lsh = new MinHash(sVectors, bands, buckets, model.getVectorSize());
 
-                        // total verifications
-                        long verifications_ = 0;
+                    // true positive
+                    long tp_ = 0;
 
-                        // for each target entity, find its candidates (query)
-                        // find TP by searching the pairs in GT
-                        for (int j = 0; j < targetEntities.size(); j++) {
-                            double[] vector = tVectors[j];
-                            Set<Integer> candidates = lsh.query(vector);
-                            for (Integer c : candidates) {
-                                IdDuplicates pair = new IdDuplicates(c, j);
-                                if (gtDuplicates.contains(pair)) tp_ += 1;
-                                verifications_ += 1;
-                            }
+                    // total verifications
+                    long verifications_ = 0;
+
+                    // for each target entity, find its candidates (query)
+                    // find TP by searching the pairs in GT
+                    for (int j = 0; j < targetEntities.size(); j++) {
+                        double[] vector = tVectors[j];
+                        Set<Integer> candidates = lsh.query(vector);
+                        for (Integer c : candidates) {
+                            IdDuplicates pair = new IdDuplicates(c, j);
+                            if (gtDuplicates.contains(pair))
+                                tp_ += 1;
+                            verifications_ += 1;
                         }
-                        // evaluate performance
-                        float recall_ = (float) tp_ / (float) gtDuplicates.size();
-                        float precision_ =  (float) tp_ / (float) verifications_;
-                        float f1_ = 2*((precision_*recall_)/(precision_+recall_));
-                        time_ = Calendar.getInstance().getTimeInMillis() - time_;
-
-                        recall += recall_;
-                        precision += precision_;
-                        f1 += f1_;
-                        tp += tp_;
-                        verifications += verifications_;
-                        time += time_;
                     }
+                    // evaluate performance
+                    float recall_ = (float) tp_ / (float) gtDuplicates.size();
+                    float precision_ =  (float) tp_ / (float) verifications_;
+                    float f1_ = 2*((precision_*recall_)/(precision_+recall_));
+                    time_ = Calendar.getInstance().getTimeInMillis() - time_;
 
-                    recall = recall/MAX_ITER;
-                    precision = precision/MAX_ITER;
-                    f1 = f1/MAX_ITER;
-                    tp = tp/MAX_ITER;
-                    verifications = verifications/MAX_ITER;
-                    time = time/MAX_ITER;
-
-                    // store best performance
-                    perf.conditionalUpdate(recall, precision, f1, bands, buckets, verifications, tp, time);
-                    perf.print(recall, precision, f1, verifications, tp, time);
+                    recall += recall_;
+                    precision += precision_;
+                    f1 += f1_;
+                    tp += tp_;
+                    verifications += verifications_;
+                    time += time_;
                 }
+
+                recall = recall/MAX_ITER;
+                precision = precision/MAX_ITER;
+                f1 = f1/MAX_ITER;
+                tp = tp/MAX_ITER;
+                verifications = verifications/MAX_ITER;
+                time = time/MAX_ITER;
+
+                // store best performance
+                perf.conditionalUpdate(recall, precision, f1, bands, buckets, verifications, tp, time);
+                perf.print(recall, precision, f1, verifications, tp, time);
             }
             perf.print();
         } catch (ParseException e) {

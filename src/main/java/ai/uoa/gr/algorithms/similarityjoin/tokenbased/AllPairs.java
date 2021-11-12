@@ -1,6 +1,6 @@
 package ai.uoa.gr.algorithms.similarityjoin.tokenbased;
 
-import ai.uoa.gr.utils.PairsComparator;
+import ai.uoa.gr.structures.comparators.PairsComparator;
 import org.javatuples.Pair;
 
 import java.util.*;
@@ -34,7 +34,7 @@ public class AllPairs extends SimilarityJoinA {
      * @param source    source dataset
      * @return          a hashmap char -> frequencies
      */
-    private Map<Character, Integer> buildFrequenciesMap(List<String> source) {
+    public Map<Character, Integer> buildFrequenciesMap(List<String> source) {
         Map<Character, Integer> frequencies = new HashMap<>();
         for (String s : source) {
             for (char c : s.toCharArray()) {
@@ -54,7 +54,7 @@ public class AllPairs extends SimilarityJoinA {
      * @param source    dataset based on which we will build the Inverted Index
      * @return          an Inverted Index
      */
-    private Map<Character, List<Pair<Integer, Integer>>> buildPrefixInvertedIndex(List<String> source) {
+    public Map<Character, List<Pair<Integer, Integer>>> buildPrefixInvertedIndex(List<String> source) {
         Map<Character, List<Pair<Integer, Integer>>> invertedIndex = new HashMap<>();
         for (int i =0; i<source.size(); i++) {
             String s = source.get(i);

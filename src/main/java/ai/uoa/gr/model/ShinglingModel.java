@@ -123,8 +123,8 @@ public class ShinglingModel {
 
     public int computeLength(boolean[] vector){
         int length = 0;
-        for(int i=0; i<vector.length; i++)
-            if (vector[i])
+        for (boolean b : vector)
+            if (b)
                 length++;
         return length;
     }
