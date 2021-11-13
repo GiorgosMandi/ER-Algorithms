@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 //          in the precision since it will probably result to fewer verifications.
 //      (2): The paper proposes a verification optimization, but there is no need for us to do this, as the way we structured
 //           the algorithm we can use a hash map, as mentioned in the paper.
-//      (3):
+//      (3): Implement a dirty ER
 
 public class TopKSimilarityJoin extends AllPairs {
     public int K;
@@ -29,6 +29,8 @@ public class TopKSimilarityJoin extends AllPairs {
 
     @Override
     public Set<Integer> query(String t) {
+        if (t.length() == 0)
+            return new HashSet<>();
 
         // use 0f for threshold to compute as prefix the whole vector (sorts vector based DF)
         List<Pair<Character, Integer>> prefix = getPrefix(t, 0f);

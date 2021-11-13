@@ -24,6 +24,9 @@ public class SimpleExp {
             options.addRequiredOption("t", "target", true, "path to the target dataset");
             options.addRequiredOption("gt", "groundTruth", true, "path to the Ground Truth dataset");
             options.addOption("k", "top-K", true, "Top-K K");
+            options.addOption("sourceField", true, "Use specific field of source");
+            options.addOption("targetField", true, "Use specific field of target");
+
 
             // parse CLI arguments
             CommandLineParser parser = new DefaultParser();
@@ -32,16 +35,26 @@ public class SimpleExp {
             int K = cmd.hasOption("k") ? Integer.parseInt(cmd.getOptionValue("k")) : 339;
 
             // read source entities
+            // read source entities
             String sourcePath = cmd.getOptionValue("s");
             List<EntityProfile> sourceEntities = Reader.readSerialized(sourcePath);
             System.out.println("Source Entities: " + sourceEntities.size());
-            List<String> sourceSTR = Utilities.entities2String(sourceEntities);
+            String sField = null;
+            if (cmd.hasOption("sourceField")){
+                sField = cmd.getOptionValue("sourceField");
+            }
+            List<String> sourceSTR = Utilities.entities2String(sourceEntities, sField);
+
 
             // read target entities
             String targetPath = cmd.getOptionValue("t");
             List<EntityProfile> targetEntities = Reader.readSerialized(targetPath);
             System.out.println("Target Entities: " + targetEntities.size());
-            List<String> targetSTR = Utilities.entities2String(targetEntities);
+            String tField = null;
+            if (cmd.hasOption("targetField")){
+                tField = cmd.getOptionValue("targetField");
+            }
+            List<String> targetSTR = Utilities.entities2String(targetEntities, tField);
 
             // read ground-truth file
             String groundTruthPath = cmd.getOptionValue("gt");
