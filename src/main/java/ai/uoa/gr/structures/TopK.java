@@ -16,21 +16,21 @@ import java.util.stream.Collectors;
 public class TopK {
     public int K;
     public String target;
-    public TreeSet<Pair<Integer, Float>> minHeap;
+    public TreeSet<Pair<Integer, Float>> maxHeap;
     public Jaccard jSimilarity = new Jaccard();
     public Map<String, Float> verifications = new HashMap<>();
 
     public TopK(String t, int k){
-        minHeap = new TreeSet<>(new TopKComparator());
+        maxHeap = new TreeSet<>(new TopKComparator());
         K = k;
         target = t;
     }
 
     public void insert(Integer id, String s){
         float similarity = (float) getSimilarity(s);
-        minHeap.add(new Pair<>(id, similarity));
-        if (minHeap.size() > K)
-            minHeap.pollLast();
+        maxHeap.add(new Pair<>(id, similarity));
+        if (maxHeap.size() > K)
+            maxHeap.pollLast();
     }
 
     public double getSimilarity(String s){
@@ -43,17 +43,17 @@ public class TopK {
         }
     }
 
-    public Pair<Integer, Float> pollFirst(){ return minHeap.pollFirst();}
+    public Pair<Integer, Float> pollFirst(){ return maxHeap.pollFirst();}
 
-    public Pair<Integer, Float> pollLast(){ return minHeap.pollLast();}
+    public Pair<Integer, Float> pollLast(){ return maxHeap.pollLast();}
 
-    public boolean isFull(){return minHeap.size() >= K;}
+    public boolean isFull(){return maxHeap.size() >= K;}
 
     public float getMinSimilarity(){
-        return minHeap.last().getValue1();
+        return maxHeap.last().getValue1();
     }
 
     public Set<Integer> flatten(){
-        return minHeap.stream().map(Pair::getValue0).collect(Collectors.toSet());
+        return maxHeap.stream().map(Pair::getValue0).collect(Collectors.toSet());
     }
 }
